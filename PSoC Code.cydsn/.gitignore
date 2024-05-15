@@ -6,7 +6,7 @@ BUILD.log
 *.cycdx
 *.cydwr
 *.cyfit
-*.cyprj*
+*.cyprj.*
 *.rpt
 *.svd
 *_timing.html
