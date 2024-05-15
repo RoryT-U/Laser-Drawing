@@ -1,0 +1,13 @@
+codegentemp
+CortexM3
+Export
+Generated_Source
+BUILD.log
+*.cycdx
+*.cydwr
+*.cyfit
+*.cyprj*
+*.rpt
+*.svd
+*_timing.html
+*.cywrk.*
