@@ -1,6 +1,0 @@
-C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|b84480e6-8ca0-4146-b117-d02a3406fa12
-C:\Users\roryt\Documents\PSoC Creator\4.4\Downloads ( 4.4).cylib\Downloads ( 4.4).cyprj|1143b85b-bf4e-4a5f-9a88-b1b31f42085d
-C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|6b06a1cd-3ab7-46a4-a8a2-73d01bfae989
-C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|4daad82f-63b9-41d1-8f8d-d40feaef05bd
-C:\Program Files (x86)\Cypress\PSoC Creator\4.4\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|9890b38e-f8c7-4008-9d1d-d270f53961c6
-C:\INSTALL\University\Units\2024_S1\FIT4701\Laser-Drawing\PSoC Code.cydsn\PSoC Code.cyprj|b4ddb9e8-3170-4057-a190-71a1036b6eba
