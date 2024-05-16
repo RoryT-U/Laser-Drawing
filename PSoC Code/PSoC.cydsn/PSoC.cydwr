@@ -255,6 +255,7 @@
       <Data key="332d6e21-97d4-4fa7-a8f7-a320d81c72e8" value="LED" />
       <Data key="77715107-f8d5-47e5-a629-0fb83101ac6b" value="X_axis" />
       <Data key="aaebc5a1-c459-4529-90a5-cf93fa8d6d6f" value="Y_axis" />
+      <Data key="b5a53add-f9b6-4c0d-8d91-458baee31f97" value="Switch_Input_1" />
     </Group>
   </Group>
   <Group key="EEPROM">
@@ -3353,12 +3354,17 @@
     </Group>
     <Group key="77715107-f8d5-47e5-a629-0fb83101ac6b">
       <Group key="0">
-        <Data key="Port Format" value="0,6" />
+        <Data key="Port Format" value="3,0" />
       </Group>
     </Group>
     <Group key="aaebc5a1-c459-4529-90a5-cf93fa8d6d6f">
       <Group key="0">
-        <Data key="Port Format" value="0,7" />
+        <Data key="Port Format" value="0,6" />
+      </Group>
+    </Group>
+    <Group key="b5a53add-f9b6-4c0d-8d91-458baee31f97">
+      <Group key="0">
+        <Data key="Port Format" value="2,2" />
       </Group>
     </Group>
   </Group>
