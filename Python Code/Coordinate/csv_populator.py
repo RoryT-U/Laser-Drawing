@@ -1,32 +1,45 @@
 
-inputFile = "train-1000-coords.csv";
+inputFile = "hands-1000.csv";
 parts = inputFile.split(".")
 f1 = open(inputFile, "r")
 
 # open and read the file after the appending:
-f2 = open(parts[0]+"-x"+parts[1], "w")
-f3 = open(parts[0]+"-y"+parts[1], "w")
-f4 = open(parts[0]+"-decs-x"+parts[1], "w")
-f5 = open(parts[0]+"-decs-y"+parts[1], "w")
+f2 = open(parts[0]+"-x."+parts[1], "w")
+f3 = open(parts[0]+"-y."+parts[1], "w")
 
 line = f1.readline()
+x_list = []
+y_list = []
 while True:
     line = f1.readline()
     if not line:
         break
 
     x = line.split(",")
-    f2.write(x[0].split(".")[0] + ",")
-    f3.write(x[1].split(".")[0] + ",")
+    x_list.append(float(x[0]))
+    y_list.append(float(x[1]))
 
-    f4.write(str(round(float(x[0]), 2)) + ",")
-    f5.write(str(round(float(x[1]), 2)) + ",")
+minX = min(x_list)
+width = max(x_list) - minX
+minY = min(y_list)
+height = max(y_list) - minY
+
+scalingFactor = max(width, height)/255
+
+for i in range(0, len(x_list)):
+    x_list[i] = (x_list[i] - minX)/scalingFactor
+    y_list[i] = (y_list[i] - minY)/scalingFactor
+
+
+for i in range(0, len(x_list)):
+    if x_list[i] > 255.0 or y_list[i] > 255.0:
+        print("bad")
+    f2.write(str(int(x_list[i])) + ',')
+    f3.write(str(int(y_list[i])) + ',')
 
 f1.close()
 f2.close()
 f3.close()
-f4.close()
-f5.close()
 
 f1 = open("square_coords_X.csv", "w")
 f2 = open("square_coords_y.csv", "w")
