@@ -1,11 +1,11 @@
 
 def coordinate_converter(input_file):
-    f1 = open(inputFile, "r")
+    f1 = open("raw_csv/"+inputFile, "r")
 
     parts = input_file.split(".")
 
-    f2 = open(parts[0]+"-x."+parts[1], "w")
-    f3 = open(parts[0]+"-y."+parts[1], "w")
+    f2 = open("converted_csvs/"+parts[0]+"-x."+parts[1], "w")
+    f3 = open("converted_csvs/"+parts[0]+"-y."+parts[1], "w")
 
     line = f1.readline()  # ignore first line
     x_list = []
@@ -27,7 +27,8 @@ def coordinate_converter(input_file):
 
     scaling_factor = max(width, height)/255
 
-    # translate all coordinates by min_x and min_y then apply scaling_factor
+    # translate all coordinates by min_x and
+    # min_y then apply scaling_factor
     for i in range(0, len(x_list)):
         scaled_x_coord = (x_list[i] - min_x)/scaling_factor
         scaled_y_coord = (y_list[i] - min_y)/scaling_factor
@@ -37,8 +38,8 @@ def coordinate_converter(input_file):
                 or scaled_y_coord > 255.0 or scaled_y_coord < 0):
             print("Invalid scaled coordinate")
 
-        f2.write(str(int(x_list[i])) + ',')
-        f3.write(str(int(y_list[i])) + ',')
+        f2.write(str(int(scaled_x_coord)) + ',')
+        f3.write(str(int(scaled_y_coord)) + ',')
 
     f1.close()
     f2.close()
@@ -46,11 +47,11 @@ def coordinate_converter(input_file):
 
 
 def square_coordinate():
-    f1 = open("square_coords_X.csv", "w")
-    f2 = open("square_coords_y.csv", "w")
+    f1 = open("converted_csvs/square_coords_100_x.csv", "w")
+    f2 = open("converted_csvs/square_coords_100_y.csv", "w")
 
-    sizes = 255
-    for x in range(0, sizes * 4):
+    sizes = 250
+    for x in range(0, sizes * 4, 10):
 
         if x < sizes:
             f1.write(str(sizes))
@@ -65,11 +66,11 @@ def square_coordinate():
             f1.write(str(x % sizes))
             f2.write(str(sizes))
 
-        f1.write(',')
+        f1.write('\n,')
         f2.write(',')
 
 
 square_coordinate()
 
-inputFile = "hands-1000.csv"
+inputFile = "atom-1000.csv"
 coordinate_converter(inputFile)
