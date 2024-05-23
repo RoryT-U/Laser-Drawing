@@ -14,11 +14,9 @@
 int main(void)
 {
     CyGlobalIntEnable; /* Enable global interrupts. */
-
-    /* Place your initialization/startup code here (e.g. MyInst_Start()) */
     
-    SineWaveX_Start();
-    SineWaveY_Start();
+    WaveDAC_X_Start();
+    WaveDAC_Y_Start();
     
     for(;;)
     {   

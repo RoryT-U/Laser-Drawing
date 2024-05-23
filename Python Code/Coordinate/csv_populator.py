@@ -1,65 +1,75 @@
 
-inputFile = "hands-1000.csv";
-parts = inputFile.split(".")
-f1 = open(inputFile, "r")
+def coordinate_converter(input_file):
+    f1 = open(inputFile, "r")
 
-# open and read the file after the appending:
-f2 = open(parts[0]+"-x."+parts[1], "w")
-f3 = open(parts[0]+"-y."+parts[1], "w")
+    parts = input_file.split(".")
 
-line = f1.readline()
-x_list = []
-y_list = []
-while True:
-    line = f1.readline()
-    if not line:
-        break
+    f2 = open(parts[0]+"-x."+parts[1], "w")
+    f3 = open(parts[0]+"-y."+parts[1], "w")
 
-    x = line.split(",")
-    x_list.append(float(x[0]))
-    y_list.append(float(x[1]))
+    line = f1.readline()  # ignore first line
+    x_list = []
+    y_list = []
+    while True:  # read all the values from the csv
+        line = f1.readline()
+        if not line:
+            break
 
-minX = min(x_list)
-width = max(x_list) - minX
-minY = min(y_list)
-height = max(y_list) - minY
+        x = line.split(",")
+        x_list.append(float(x[0]))
+        y_list.append(float(x[1]))
 
-scalingFactor = max(width, height)/255
+    # determine in minimal values and scaling_factor
+    min_x = min(x_list)
+    width = max(x_list) - min_x
+    min_y = min(y_list)
+    height = max(y_list) - min_y
 
-for i in range(0, len(x_list)):
-    x_list[i] = (x_list[i] - minX)/scalingFactor
-    y_list[i] = (y_list[i] - minY)/scalingFactor
+    scaling_factor = max(width, height)/255
+
+    # translate all coordinates by min_x and min_y then apply scaling_factor
+    for i in range(0, len(x_list)):
+        scaled_x_coord = (x_list[i] - min_x)/scaling_factor
+        scaled_y_coord = (y_list[i] - min_y)/scaling_factor
+
+        # check coordinates are valid
+        if (scaled_x_coord > 255.0 or scaled_x_coord < 0
+                or scaled_y_coord > 255.0 or scaled_y_coord < 0):
+            print("Invalid scaled coordinate")
+
+        f2.write(str(int(x_list[i])) + ',')
+        f3.write(str(int(y_list[i])) + ',')
+
+    f1.close()
+    f2.close()
+    f3.close()
 
 
-for i in range(0, len(x_list)):
-    if x_list[i] > 255.0 or y_list[i] > 255.0:
-        print("bad")
-    f2.write(str(int(x_list[i])) + ',')
-    f3.write(str(int(y_list[i])) + ',')
+def square_coordinate():
+    f1 = open("square_coords_X.csv", "w")
+    f2 = open("square_coords_y.csv", "w")
 
-f1.close()
-f2.close()
-f3.close()
+    sizes = 255
+    for x in range(0, sizes * 4):
 
-f1 = open("square_coords_X.csv", "w")
-f2 = open("square_coords_y.csv", "w")
+        if x < sizes:
+            f1.write(str(sizes))
+            f2.write(str(sizes - x))
+        elif x < sizes * 2:
+            f1.write(str(sizes - x % sizes))
+            f2.write(str(0))
+        elif x < sizes * 3:
+            f1.write(str(0))
+            f2.write(str(x % sizes))
+        else:
+            f1.write(str(x % sizes))
+            f2.write(str(sizes))
 
-sizes = 255
-for x in range(0, sizes * 4):
+        f1.write(',')
+        f2.write(',')
 
-    if x < sizes:
-        f1.write(str(sizes))
-        f2.write(str(sizes - x))
-    elif x < sizes * 2:
-        f1.write(str(sizes - x % sizes))
-        f2.write(str(0))
-    elif x < sizes * 3:
-        f1.write(str(0))
-        f2.write(str(x % sizes))
-    else:
-        f1.write(str(x % sizes))
-        f2.write(str(sizes))
 
-    f1.write(',')
-    f2.write(',')
+square_coordinate()
 
+inputFile = "hands-1000.csv"
+coordinate_converter(inputFile)
