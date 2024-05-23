@@ -70,7 +70,22 @@ def square_coordinate():
         f2.write(',')
 
 
+def snake():
+    f1 = open("converted_csvs/snaked-lines-x.csv", "w")
+    f2 = open("converted_csvs/snaked-lines-y.csv", "w")
+
+    sizes = 250
+    f1.write("0")
+    f2.write("0")
+    for x in range(0, 9, 2):
+        f1.write(",255,255,0,0")
+        y = x*25
+        f2.write(','+str(y)+","+str(y+25) + ',' + str(y+25) + ',' + str(y+50))
+
+
+snake()
 square_coordinate()
 
 inputFile = "atom-1000.csv"
 coordinate_converter(inputFile)
+
