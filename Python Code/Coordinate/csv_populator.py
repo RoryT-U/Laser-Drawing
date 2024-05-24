@@ -47,11 +47,11 @@ def coordinate_converter(input_file):
 
 
 def square_coordinate():
-    f1 = open("converted_csvs/square_coords_100_x.csv", "w")
-    f2 = open("converted_csvs/square_coords_100_y.csv", "w")
+    f1 = open("converted_csvs/square_coords_200_x.csv", "w")
+    f2 = open("converted_csvs/square_coords_200_y.csv", "w")
 
     sizes = 250
-    for x in range(0, sizes * 4, 10):
+    for x in range(0, sizes * 4, 5):
 
         if x < sizes:
             f1.write(str(sizes))
@@ -86,6 +86,6 @@ def snake():
 snake()
 square_coordinate()
 
-inputFile = "atom-1000.csv"
+inputFile = "hands-750.csv"
 coordinate_converter(inputFile)
 
