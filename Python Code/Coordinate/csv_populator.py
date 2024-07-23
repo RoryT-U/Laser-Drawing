@@ -1,11 +1,15 @@
+import numpy as np
+
+
+maxSize = 4080.0
 
 def coordinate_converter(input_file):
     f1 = open("raw_csv/"+inputFile, "r")
 
     parts = input_file.split(".")
 
-    f2 = open("converted_csvs/"+parts[0]+"-x."+parts[1], "w")
-    f3 = open("converted_csvs/"+parts[0]+"-y."+parts[1], "w")
+    f2 = open("converted_csvs/"+parts[0] + "-" + str(maxSize) + "-x."+parts[1], "w")
+    f3 = open("converted_csvs/"+parts[0] + "-" + str(maxSize) + "-y."+parts[1], "w")
 
     line = f1.readline()  # ignore first line
     x_list = []
@@ -25,7 +29,7 @@ def coordinate_converter(input_file):
     min_y = min(y_list)
     height = max(y_list) - min_y
 
-    scaling_factor = max(width, height)/255
+    scaling_factor = max(width, height)/maxSize
 
     # translate all coordinates by min_x and
     # min_y then apply scaling_factor
@@ -34,8 +38,8 @@ def coordinate_converter(input_file):
         scaled_y_coord = (y_list[i] - min_y)/scaling_factor
 
         # check coordinates are valid
-        if (scaled_x_coord > 255.0 or scaled_x_coord < 0
-                or scaled_y_coord > 255.0 or scaled_y_coord < 0):
+        if (scaled_x_coord > maxSize or scaled_x_coord < 0
+                or scaled_y_coord > maxSize or scaled_y_coord < 0):
             print("Invalid scaled coordinate")
 
         f2.write(str(int(scaled_x_coord)) + ',')
@@ -70,6 +74,25 @@ def square_coordinate():
         f2.write(',')
 
 
+def sine_wave():
+    f1 = open("converted_csvs/circle_coords_4080_x.csv", "w")
+    f2 = open("converted_csvs/circle_coords_4080_y.csv", "w")
+
+    x = np.linspace(0, 4080, 4080)
+    sine = 2040 * np.sin((np.pi*x)/2040)
+
+
+    for i in range(0, len(sine)):
+        f1.write(str(i))
+        f1.write(',')
+        f2.write(str(round(sine[i]+2040)))
+        f2.write(',')
+
+
+    print(sine[1020])
+
+
+sine_wave()
 square_coordinate()
 
 inputFile = "hands-750.csv"
