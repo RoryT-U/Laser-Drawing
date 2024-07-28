@@ -13,23 +13,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
 
 int main(void)
 {
     CyGlobalIntEnable; /* Enable global interrupts. */
 
     /* Place your initialization/startup code here (e.g. MyInst_Start()) */
+       
+    int yAxis[4080];
+    int xAxis[4080];
     
-
-    
-    int array[4080];
-    
-    for (int i = 0; i < 4080; i++){
-        array[i] = i;   
+    for (int i = 0; i < 4080; i+=2){
+        xAxis[i] = 2040*sin(M_PI*(i+1020)/2040)+2040;;   
+        yAxis[i] = 2040*sin(M_PI*i/2040)+2040;
     }
+   
     int count = 0;
-    int count2 = 1020;
     
     DVDAC_1_Start();
     DVDAC_2_Start();
@@ -40,16 +40,10 @@ int main(void)
             count = 0;
         }
         
-        if (count2 == 4080){
-            count2 = 0;
-        }
+        DVDAC_1_SetValue(xAxis[count]);
+        DVDAC_2_SetValue(yAxis[count]);
         
-        DVDAC_1_SetValue(array[count]);
-        DVDAC_2_SetValue(array[count2]);
-        /* Place your application code here. */
-        
-        count = count + 1;
-        count2 = count2 + 1;
+        count += 2;
     }
 }
 
