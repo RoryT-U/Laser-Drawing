@@ -1,4 +1,7 @@
 import cv2
+import numpy as np
+import csv
+
 
 def nothing(x):
     pass
@@ -10,8 +13,8 @@ if not cap.isOpened():
     exit()
 
 cv2.namedWindow('canny', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('canny', 600, 400)  # Set the desired window size (width, height)
-switch = '0 : OFF \n1 : ON'
+cv2.resizeWindow('canny', 600, 550)  # Set the desired window size (width, height)
+switch = 'OFF / ON'
 cv2.createTrackbar(switch, 'canny', 0, 1, nothing)
 cv2.createTrackbar('Lower', 'canny',0,255,nothing)
 cv2.createTrackbar('Upper', 'canny',0,255,nothing)
@@ -45,6 +48,25 @@ while True:
     key = cv2.waitKey(1) & 0xFF
 
     if key == 27: # press esc to stop
+        break
+
+    if key == 32: # press space to capture image
+        coords = np.column_stack(np.where(edges > 0))
+
+        # save edge and original image
+        cv2.imwrite('outputs/edges.png', edges)
+        cv2.imwrite('outputs/original_img.png',frame)
+
+        # Write coordinates to a CSV file
+        csv_filename = 'outputs/raw_edge_coordinates.csv'
+        with open(csv_filename, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            # Write header
+            csvwriter.writerow(['X', 'Y'])
+            # Write coordinates
+            csvwriter.writerows(coords)
+
+        print(f'Edge coordinates saved to {csv_filename}')
         break
 
 cv2.destroyAllWindows()
