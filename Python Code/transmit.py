@@ -4,30 +4,42 @@ import serial
 import time
 from threading import Thread
 import random
-
+import csv
 
 serialPort = serial.Serial(
-    port="COM5", baudrate=1500000, bytesize=8, timeout=0, stopbits=serial.STOPBITS_ONE
+    port="COM5", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
 )
 
-DATA = []
+def readCSV(filename):
+  with open(filename, 'r') as csvfile:
+    csvreader = csv.reader(csvfile)
+    row = next(csvreader)
+    if row[-1] == '':
+        row = row[:-1]
+    int_row = [int(value) for value in row]
 
-atom = [[112,105,99,94,89,86,83,80,78,76,74,72,71,70,69,68,68,67,67,67,67,67,67,67,68,69,70,71,72,73,75,77,79,82,85,89,93,98,104,111,118,125,130,134,138,141,144,146,148,150,152,153,154,155,156,157,157,157,158,158,158,157,157,156,156,155,154,153,151,149,148,145,143,140,136,132,128,122,115,117,123,127,131,134,136,138,140,142,144,145,146,147,147,148,148,149,149,149,148,148,147,147,146,145,144,142,140,139,136,134,131,127,123,117,110,103,99,95,92,89,87,85,83,81,80,79,78,77,77,76,76,76,76,76,76,77,77,78,79,80,82,83,85,87,90,93,96,100,105,2,0,0,2,5,8,13,17,22,27,33,38,44,50,55,61,68,74,80,86,93,99,106,112,119,126,133,139,146,153,161,168,175,182,190,197,204,212,218,223,225,224,222,219,215,211,207,202,196,191,186,180,174,168,162,156,150,144,137,131,124,118,111,105,98,91,84,77,70,63,56,49,41,34,26,19,12,6,10,16,24,31,38,46,53,60,67,74,81,88,95,102,108,115,122,128,134,141,147,153,159,165,171,177,182,188,193,198,203,208,211,215,216,214,209,201,194,187,179,172,165,158,151,144,137,130,123,117,110,103,97,91,84,78,72,66,60,54,48,42,37,32,27,22,17,13,10,8,222,217,211,204,197,189,182,174,167,160,153,146,139,132,125,118,112,105,99,92,86,79,73,67,61,55,49,43,38,32,27,22,17,12,8,4,1,0,0,2,7,14,21,29,36,43,51,58,65,72,79,86,93,100,107,113,120,126,133,139,146,152,158,164,170,176,182,187,193,198,203,208,213,217,220,223,225,225,215,216,214,210,206,202,197,192,186,181,175,169,164,158,151,145,139,133,126,120,113,107,100,93,86,79,72,65,58,51,44,36,29,22,15,9,8,10,14,18,22,27,32,38,43,49,54,60,66,72,79,85,91,98,104,111,117,124,131,138,144,151,158,166,173,180,187,195,202,209,112,105,98,93,90,89,91,94,100,106,114,121,127,132,134,135,133,129,123,117,41,35,31,31,34,40,47,54,57,57,53,47,81,75,71,72,76,83,90,96,98,97,93,86,207,201,199,200,205,212,219,224,226,224,219],
-[254,253,249,244,238,232,225,218,211,204,197,190,183,175,168,161,153,146,139,131,124,117,109,102,95,87,80,73,65,58,51,44,37,30,23,17,11,6,1,0,0,4,9,15,21,28,35,41,49,56,63,70,77,85,92,99,107,114,121,129,136,143,151,158,165,173,180,187,194,202,209,216,223,229,236,242,248,252,254,244,240,234,228,221,214,207,200,193,186,178,171,164,156,149,142,134,127,120,112,105,98,90,83,76,69,61,54,47,40,33,26,20,14,10,9,12,18,24,31,38,45,52,59,66,73,80,88,95,102,110,117,124,132,139,147,154,161,169,176,183,190,197,205,212,219,225,232,238,243,191,184,176,169,163,156,150,144,139,134,128,123,119,114,110,105,101,97,93,89,85,82,78,75,72,69,66,63,61,58,56,55,53,52,52,52,52,54,58,64,71,78,85,92,98,104,110,116,121,126,131,136,140,145,149,153,157,161,165,169,172,176,179,182,185,188,191,193,196,198,199,201,202,202,202,201,199,195,187,192,193,194,193,192,191,189,187,184,182,179,176,173,170,167,163,160,156,152,148,144,140,135,131,126,121,116,111,106,100,94,88,81,74,67,63,61,60,61,62,63,65,67,69,72,74,77,80,83,87,90,94,98,101,105,109,114,118,123,127,132,137,142,148,153,159,165,172,179,191,196,200,202,202,202,202,201,199,197,195,193,190,188,185,182,179,175,172,168,164,161,157,153,148,144,139,135,130,125,120,115,109,103,97,91,84,77,69,63,57,54,52,52,52,52,54,55,57,59,61,64,67,69,73,76,79,83,86,90,94,98,102,106,110,115,120,124,129,134,140,145,151,157,164,171,178,185,185,178,171,164,158,152,147,141,136,131,126,122,117,113,109,105,101,97,93,90,86,83,80,77,74,71,69,67,65,63,62,61,60,61,63,68,76,83,89,95,101,107,112,117,122,127,132,136,141,145,149,153,157,160,164,167,171,174,177,180,182,185,187,189,191,192,193,194,193,191,150,149,145,140,134,126,119,113,108,105,104,106,110,115,122,129,136,142,147,149,70,67,60,53,47,43,43,47,53,60,66,70,231,227,221,213,208,205,205,210,216,223,229,232,108,103,96,89,84,81,83,88,95,102,107]]
+    if max(int_row) > 255:
+        int_row = [int(value)//16 for value in row] # is 12bits
+    else:
+        int_row = [int(value) for value in row]
+    return int_row
 
-# input structure doesnt really matter, can change
-output = []
-for i in range(len(atom[0])):
-    output.extend([atom[0][i], atom[1][i], 255])
+def getBytesOfCSV(filename):
+    x = readCSV("Python Code\\Coordinate\\converted_csvs\\"+filename+"-y.csv")
+    y = readCSV("Python Code\\Coordinate\\converted_csvs\\"+filename+"-x.csv")
+    points = [x,y]
 
-DATA = bytearray(output + [13,13,13])
+    output = []
+    for i in range(len(points[0])):
+        output.extend([points[0][i], points[1][i], 255])
+
+    return bytearray(output + [13,13,13])
+
+
+#### READ DATA
+DATA = getBytesOfCSV("circle-2040")
 
 #DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
-
-
-def sendData():
-    serialPort.write(DATA)
-
 
 
 def readSerial():
@@ -43,19 +55,6 @@ def readSerial():
             except:
                 print(serialString)
 
-        # if not serialString:
-        #     pass
-
-        # if (True):
-        #     try:
-        #         serialPort.write(DATA)
-        #         successes += 1
-        #     except:
-        #         print(f"EXCEPTION: it broke at {successes} successes")
-        #         break
-        # else:
-        #     print(f"Broke at {successes} successes")
-
 
 readThread = Thread(target = readSerial)
 readThread.daemon = True
@@ -63,20 +62,19 @@ readThread.start()
 
 
 def dataTest():
-
-    FRAMES = 100
+    FRAMES = 50
     # send frames
     start = time.perf_counter()
     for i in range(0,FRAMES):
-        sendData()
+        serialPort.write(DATA)
     serialPort.write(bytearray([13,13,13,13]))
 
     # wait for ACK
-    # while 1:
-    #     serialString = serialPort.readline()
-    #     if serialString:
-    #         print(int(serialString.decode("ascii")))
-    #         break
+    while 1:
+        serialString = serialPort.readline()
+        if serialString:
+            print(serialString.decode("ascii"))
+            break
 
     stop = time.perf_counter()
     elapsed = stop - start
@@ -84,12 +82,27 @@ def dataTest():
     print(f"recieved {FRAMES} frames ({numBytes} bytes) in {elapsed:0.4f} seconds ({numBytes*8/elapsed/1000:0.0f} Kbps)")
 
 
+def sendData():
+    serialPort.write(DATA)
+    print(f"sent {len(DATA)} bytes")
+
+def transmit(filename):
+    transmitting = getBytesOfCSV(filename)
+    serialPort.write(transmitting)
+    print(f"sent {len(transmitting)} bytes")
+
 while 1:
     userInput = input()
 
     if (userInput == "data"):
+        sendData()
+    elif (userInput == "speed"):
         dataTest()
-
+    elif (userInput == "pause"):
+        serialPort.write(bytearray([0,13,13,13]))
+    elif (userInput[:5] == "send "):
+        print(userInput[5:])
+        transmit(userInput[5:])
     else:
         serialPort.write(str.encode(userInput, "ascii"))
 

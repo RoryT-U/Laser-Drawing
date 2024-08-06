@@ -25,7 +25,7 @@ int main(void)
     int xAxis[4080];
     
     for (int i = 0; i < 4080; i+=2){
-        xAxis[i] = 2040*sin(M_PI*(i+1020)/2040)+2040;;   
+        xAxis[i] = 2040*sin(M_PI*(i+1020)/2040)+2040;
         yAxis[i] = 2040*sin(M_PI*i/2040)+2040;
     }
    

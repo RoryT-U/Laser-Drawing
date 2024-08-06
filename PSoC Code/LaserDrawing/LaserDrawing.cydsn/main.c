@@ -27,6 +27,8 @@
 #include <project.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 #if defined(__GNUC__)
 
@@ -43,6 +45,7 @@ uint8 const LINE_STR_LENGTH = 128;
 int main()
 {
     char8 readBuffer[10000];
+    uint16 readBufferLen = 0;
     uint16 readBufferItr = 0;
     uint16 readBytes = 0;
     uint16 successes = 0;
@@ -56,12 +59,28 @@ int main()
 
     CyGlobalIntEnable;
 
+    /* TESTING */
+    int yAxis[127];
+    int xAxis[127];
+    
+    for (int i = 0; i < 127; i+=1){
+        xAxis[i] = 127*sin(M_PI*(2*i+63)/127)+127;
+        yAxis[i] = 127*sin(M_PI*2*i/127)+127;
+    }
+   
+    int testCount = 0;
+
+
+
     /* Start USBFS operation with 5-V operation. */
     USBUART_Start(USBFS_DEVICE, USBUART_5V_OPERATION);
     
     // start DVDACs
     DVDAC_1_Start();
     DVDAC_2_Start();
+
+    VDAC8_1_Start();
+    VDAC8_2_Start();
 
 
     while (0u == USBUART_GetConfiguration())
@@ -98,9 +117,8 @@ int main()
                     // while (0u == USBUART_CDCIsReady()) {}
                     // USBUART_PutData(buffer, count);
 
+                    memcpy(&readBuffer[readBytes], buffer, count);
                     readBytes += count;
-                    // TODO: replace with memcopy() cos null bytes will break this
-                    strncat(readBuffer, &buffer, count);
 
                     // sprintf(lineStr, "Just Read %d bits! total of %d \r\r\r", count, readBytes);
                     // while (0u == USBUART_CDCIsReady()) {}
@@ -109,23 +127,24 @@ int main()
                     // currently using 3 returns to indicate end, ASCII 13
                     if (count > 3 && buffer[count - 1] == 13 && buffer[count - 2] == 13 && buffer[count - 3] == 13)
                     {
-                       // sprintf(lineStr, "Total of %d bits!\r\r\r", readBytes);
-                        //while (0u == USBUART_CDCIsReady()) {}
-                        //USBUART_PutString(lineStr);
-                    
-                        if (readBytes == 1503) {
-                            successes++;
-                        }
+                       sprintf(lineStr, "Recieved %d bytes!\r\r\r", readBytes);
+                        while (0u == USBUART_CDCIsReady()) {}
+                        USBUART_PutString(lineStr);
 
-                        if (count > 3 && buffer[count - 4] == 13) {
-                            sprintf(lineStr, "%d", successes);
-                            while (0u == USBUART_CDCIsReady()) {}
-                            USBUART_PutString(lineStr);
-                        }
-
+                        readBufferLen = readBytes-3;
                         readBytes = 0;
-                        // TODO: better way to clear the read buffer! probs a write ptr somewhere...
-                        readBuffer[0] = '\0';
+                    
+                        // if (readBytes == 1503) {
+                        //     successes++;
+                        // }
+
+                        // if (count > 3 && buffer[count - 4] == 13) {
+                        //     sprintf(lineStr, "%d", successes);
+                        //     while (0u == USBUART_CDCIsReady()) {}
+                        //     USBUART_PutString(lineStr);
+                        // }
+
+                        // memset(buffer, 0, readBytes); // takes too many cpu cycles, just overwrite
                     }
                 }
 
@@ -143,11 +162,29 @@ int main()
             }
         }
 
+        /* TESTING */
+        // if (testCount == 127){
+        //     testCount = 0;
+        // }
+        
+        // DVDAC_1_SetValue(xAxis[testCount]*16);
+        // DVDAC_2_SetValue(yAxis[testCount]*16);
+        
+        // testCount += 1;
+
         // draw the thing (multiply by 16 if its small lol)
-        // DVDAC_1_SetValue(readBuffer[readBufferItr]);
-        // DVDAC_2_SetValue(readBuffer[readBufferItr+1]);
+        if (readBufferLen < 3) {continue;}
+        if (readBufferItr > readBufferLen) {readBufferItr = 0;}
+
+        // DVDAC_1_SetValue(readBuffer[readBufferItr]*16);
+        // DVDAC_2_SetValue(readBuffer[readBufferItr+1]*16);
+
+        VDAC8_1_SetValue(readBuffer[readBufferItr]);
+        VDAC8_2_SetValue(readBuffer[readBufferItr+1]);
         // TODO: code to change brightness here
-        readBufferItr += 3;
+        CyDelayUs(100);
+        readBufferItr = readBufferItr + 3;
+
     }
 }
 
