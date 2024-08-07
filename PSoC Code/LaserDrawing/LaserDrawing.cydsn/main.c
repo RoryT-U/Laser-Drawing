@@ -44,7 +44,7 @@ uint8 const LINE_STR_LENGTH = 128;
 
 int main()
 {
-    char8 readBuffer[10000];
+    char8 readBuffer[15000];
     uint16 readBufferLen = 0;
     uint16 readBufferItr = 0;
     uint16 readBytes = 0;
@@ -56,25 +56,25 @@ int main()
     uint8 state;
     char8 lineStr[LINE_STR_LENGTH];
 
-
     CyGlobalIntEnable;
 
     /* TESTING */
-    int yAxis[127];
-    int xAxis[127];
-    
-    for (int i = 0; i < 127; i+=1){
-        xAxis[i] = 127*sin(M_PI*(2*i+63)/127)+127;
-        yAxis[i] = 127*sin(M_PI*2*i/127)+127;
+    uint16 POINTS = 2040;
+    uint16 RES = 255;
+    int yAxis[POINTS];
+    int xAxis[POINTS];
+
+    for (int i = 0; i < POINTS; i++)
+    {
+        xAxis[i] = RES * sin(2 * M_PI * i / POINTS) + RES / 2;
+        yAxis[i] = RES * cos(2 * M_PI * i / POINTS) + RES / 2;
     }
-   
+
     int testCount = 0;
-
-
 
     /* Start USBFS operation with 5-V operation. */
     USBUART_Start(USBFS_DEVICE, USBUART_5V_OPERATION);
-    
+
     // start DVDACs
     DVDAC_1_Start();
     DVDAC_2_Start();
@@ -82,11 +82,10 @@ int main()
     VDAC8_1_Start();
     VDAC8_2_Start();
 
-
     while (0u == USBUART_GetConfiguration())
     {
     };
-    //USBUART_PutString("Connection Ready \r\n");
+    // USBUART_PutString("Connection Ready \r\n");
 
     for (;;)
     {
@@ -127,13 +126,15 @@ int main()
                     // currently using 3 returns to indicate end, ASCII 13
                     if (count > 3 && buffer[count - 1] == 13 && buffer[count - 2] == 13 && buffer[count - 3] == 13)
                     {
-                       sprintf(lineStr, "Recieved %d bytes!\r\r\r", readBytes);
-                        while (0u == USBUART_CDCIsReady()) {}
+                        sprintf(lineStr, "Recieved %d bytes!\r\r\r", readBytes);
+                        while (0u == USBUART_CDCIsReady())
+                        {
+                        }
                         USBUART_PutString(lineStr);
 
-                        readBufferLen = readBytes-3;
+                        readBufferLen = readBytes - 3;
                         readBytes = 0;
-                    
+
                         // if (readBytes == 1503) {
                         //     successes++;
                         // }
@@ -163,28 +164,43 @@ int main()
         }
 
         /* TESTING */
-        // if (testCount == 127){
-        //     testCount = 0;
-        // }
-        
-        // DVDAC_1_SetValue(xAxis[testCount]*16);
-        // DVDAC_2_SetValue(yAxis[testCount]*16);
-        
-        // testCount += 1;
+        uint8 TEST = 0;
 
-        // draw the thing (multiply by 16 if its small lol)
-        if (readBufferLen < 3) {continue;}
-        if (readBufferItr > readBufferLen) {readBufferItr = 0;}
+        if (TEST == 1)
+        {
+            if (testCount >= POINTS)
+            {
+                testCount = 0;
+            }
 
-        // DVDAC_1_SetValue(readBuffer[readBufferItr]*16);
-        // DVDAC_2_SetValue(readBuffer[readBufferItr+1]*16);
+            VDAC8_1_SetValue(xAxis[testCount]);
+            VDAC8_1_SetValue(yAxis[testCount]);
 
-        VDAC8_1_SetValue(readBuffer[readBufferItr]);
-        VDAC8_2_SetValue(readBuffer[readBufferItr+1]);
-        // TODO: code to change brightness here
-        CyDelayUs(100);
-        readBufferItr = readBufferItr + 3;
+            testCount += 1;
+        }
+        else
+        {
 
+            // draw the thing (multiply by 16 if its small lol)
+            if (readBufferLen < 3)
+            {
+                continue;   // not an image
+            }
+            if (readBufferItr > readBufferLen)
+            {
+                readBufferItr = 0;
+            }
+
+            // DVDAC_1_SetValue(readBuffer[readBufferItr]*16);
+            // DVDAC_2_SetValue(readBuffer[readBufferItr+1]*16);
+
+            VDAC8_1_SetValue(readBuffer[readBufferItr]);
+            VDAC8_2_SetValue(readBuffer[readBufferItr + 1]);
+            CyDelayUs(30);
+            // TODO: code to change brightness here
+
+            readBufferItr = readBufferItr + 3;
+        }
     }
 }
 

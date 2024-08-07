@@ -1,5 +1,8 @@
 # pip install pyserial
 
+
+# note we only support 8 bits at the moment!
+
 import serial
 import time
 from threading import Thread
@@ -14,30 +17,37 @@ def readCSV(filename):
   with open(filename, 'r') as csvfile:
     csvreader = csv.reader(csvfile)
     row = next(csvreader)
+
     if row[-1] == '':
         row = row[:-1]
     int_row = [int(value) for value in row]
 
-    if max(int_row) > 255:
-        int_row = [int(value)//16 for value in row] # is 12bits
-    else:
-        int_row = [int(value) for value in row]
-    return int_row
+    scale = max(int_row) / 255
+
+    scaled_row = [int(value // scale) for value in int_row]
+
+    return scaled_row
+
+SWAP_XY = False
+FLIP_X = True
+FLIP_Y = True
 
 def getBytesOfCSV(filename):
-    x = readCSV("Python Code\\Coordinate\\converted_csvs\\"+filename+"-y.csv")
-    y = readCSV("Python Code\\Coordinate\\converted_csvs\\"+filename+"-x.csv")
-    points = [x,y]
+    xLst = readCSV(f"Python Code\\Coordinate\\converted_csvs\\{filename}-{'y' if SWAP_XY else 'x'}.csv")
+    yLst = readCSV(f"Python Code\\Coordinate\\converted_csvs\\{filename}-{'x' if SWAP_XY else 'y'}.csv")
+
+    xLst = [255-val for val in xLst] if FLIP_X else xLst
+    yLst = [255-val for val in yLst] if FLIP_Y else yLst
 
     output = []
-    for i in range(len(points[0])):
-        output.extend([points[0][i], points[1][i], 255])
+    for i in range(len(xLst)):
+        output.extend([xLst[i], yLst[i], 255])
 
     return bytearray(output + [13,13,13])
 
 
 #### READ DATA
-DATA = getBytesOfCSV("circle-2040")
+DATA = getBytesOfCSV("mike-1000")
 
 #DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
 

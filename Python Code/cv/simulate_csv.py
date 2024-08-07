@@ -90,8 +90,8 @@ def draw_acyclic_path_and_save(csv_file, output_image, output_csv, keep_ratio):
     path_df.to_csv(output_csv, index=False)
 
 # Usage example
-csv_file = 'outputs/raw_edge_coordinates.csv'
-output_image = 'outputs/output_image.png'
-output_csv = 'outputs/shortest_path.csv'
-keep_ratio = 0.5  # 50% of the points will be preserved
+csv_file = f'Python Code\\cv\\out\\{filename}.csv'
+output_image = f'Python Code\\cv\\out\\{filename}-path.png'
+output_csv = f'Python Code\\cv\\out\\{filename}-shortest.csv'
+keep_ratio = 0.1  # 50% of the points will be preserved
 draw_acyclic_path_and_save(csv_file, output_image, output_csv, keep_ratio)
