@@ -49,6 +49,8 @@ while True:
     else:
         edges = cv2.Canny(res, lower, upper)
     
+    print(edges)
+
     cv2.imshow('canny',edges)
     key = cv2.waitKey(1) & 0xFF
 
@@ -59,11 +61,11 @@ while True:
         coords = np.column_stack(np.where(edges > 0))
 
         # save edge image
-        cv2.imwrite(f'Python Code\\cv\\out\\{filename}-e.png', edges)
+        cv2.imwrite(f'Python Code\\cv\\output\\{filename}-e.png', edges)
 
         # Write coordinates to a CSV file
         # TODO: Why doesnt this workkkkk
-        csv_filename = f'Python Code\\cv\\out\\{filename}.csv'
+        csv_filename = f'Python Code\\cv\\output\\{filename}.csv'
         with open(csv_filename, 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             # Write header

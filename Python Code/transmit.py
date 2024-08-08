@@ -100,6 +100,7 @@ def transmit(filename):
     transmitting = getBytesOfCSV(filename)
     serialPort.write(transmitting)
     print(f"sent {len(transmitting)} bytes")
+    time.sleep(3)
 
 while 1:
     userInput = input()
@@ -108,6 +109,18 @@ while 1:
         sendData()
     elif (userInput == "speed"):
         dataTest()
+
+    elif (userInput == "test"):
+        transmit("atom-500")
+        transmit("atom-1000")
+        transmit("circle-510")
+        transmit("circle-2040")
+        transmit("image-4000")
+        transmit("image-1500")
+        transmit("mike-750")
+        transmit("mike-1000")
+
+
     elif (userInput == "pause"):
         serialPort.write(bytearray([0,13,13,13]))
     elif (userInput[:5] == "send "):
