@@ -35,5 +35,4 @@ for i in range(0, len(xAxis), 4):
 for i in range(0, len(yAxis), 4):
     y.append(yAxis[i])
 
-print(x)
-print(y)
+

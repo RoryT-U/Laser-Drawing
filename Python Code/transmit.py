@@ -1,17 +1,9 @@
-# pip install pyserial
-
-
-# note we only support 8 bits at the moment!
-
-import serial
 import time
-from threading import Thread
 import random
 import csv
+import PSoCBridge
 
-serialPort = serial.Serial(
-    port="COM5", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
-)
+PSoCBridge.Initialise("COM5")
 
 def readCSV(filename):
   with open(filename, 'r') as csvfile:
@@ -51,26 +43,6 @@ DATA = getBytesOfCSV("mike-1000")
 
 #DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
 
-
-def readSerial():
-    successes = 0
-    while 1:
-    # Read data out of the buffer until a carraige return / new line is found
-        #serialString = serialPort.read_until(expected="\n", size=10)
-
-        serialString = serialPort.readline()
-        if serialString:
-            try:
-                print(serialString.decode("ascii"))
-            except:
-                print(serialString)
-
-
-readThread = Thread(target = readSerial)
-readThread.daemon = True
-readThread.start()
-
-
 def dataTest():
     FRAMES = 50
     # send frames
@@ -91,10 +63,6 @@ def dataTest():
     numBytes = FRAMES*len(DATA)
     print(f"recieved {FRAMES} frames ({numBytes} bytes) in {elapsed:0.4f} seconds ({numBytes*8/elapsed/1000:0.0f} Kbps)")
 
-
-def sendData():
-    serialPort.write(DATA)
-    print(f"sent {len(DATA)} bytes")
 
 def transmit(filename):
     transmitting = getBytesOfCSV(filename)

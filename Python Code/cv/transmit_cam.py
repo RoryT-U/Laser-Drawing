@@ -9,7 +9,7 @@ from scipy.spatial import KDTree
 def nothing(x):
     pass
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(2)
 
 if not cap.isOpened():
     print("Error: Could not open video stream.")
@@ -59,20 +59,20 @@ while True:
 
 
     if True: # press esc to stop
-        cv2.imshow('canny',edges)
+        #cv2.imshow('canny',edges)
 
         points = np.column_stack(np.where(edges > 0))
 
         if len(points) < 2:
             continue
 
-        keep_ratio = 2000/len(points)
+        keep_ratio = 3000/len(points)
 
 
         # Randomly select a subset of points based on the keep_ratio
         total_points = len(points)
         num_points_to_keep = int(total_points * keep_ratio)
-        if num_points_to_keep < 2:  # Ensure at least 2 points are kept
+        if num_points_to_keep < 10:  # Ensure at least 2 points are kept
             raise ValueError("keep_ratio is too low, resulting in less than 2 points being kept")
         
         selected_indices = np.random.choice(total_points, num_points_to_keep, replace=True)

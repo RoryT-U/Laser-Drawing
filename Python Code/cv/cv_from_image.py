@@ -49,7 +49,7 @@ while True:
     else:
         edges = cv2.Canny(res, lower, upper)
     
-    print(edges)
+    #print(edges)
 
     cv2.imshow('canny',edges)
     key = cv2.waitKey(1) & 0xFF
