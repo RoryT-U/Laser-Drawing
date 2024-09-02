@@ -128,7 +128,11 @@ def start_pong_game():
         
         add_paddle_coords(to_send, player_two_x, player_two_y, paddle_width, paddle_height, 100, 255, True)
 
-        to_send.extend([128, 128, 0, 128, 128, 0]) # Pause Drawing at end to try and reduce streaks
+        if DELAYS:
+            # Pause Drawing at end to try and reduce streaks
+            for _ in range(0, DELAY_LENGTH):
+                to_send.extend([128, 128, 0]) 
+
 
         to_send.extend([13,13,13,13,13,13])
         print(len(to_send))
@@ -165,9 +169,14 @@ def add_paddle_coords(coords:list, paddle_x, paddle_y, paddle_width, paddle_heig
 
     increment = int(np.ceil((paddle_width*2 + paddle_height*2)/num_points))
     
-    if (delay and len(coords) > 3):
+    if (DELAYS and delay and len(coords) > 3):
+        # Turns off colour at the current location
         for _ in range(0, DELAY_LENGTH):
             add_coord(coords, coords[-3], coords[-2], 0)
+
+        # Moves to the Start of the Paddle with the colour still off
+        for _ in range(0, DELAY_LENGTH):
+            add_coord(coords, x1, paddle_y, 0) 
 
     # Top Left to Top Right
     for x1 in range(paddle_x, paddle_x+paddle_width, increment):
@@ -198,8 +207,16 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
     # Generate angles evenly spaced around the circle
     angles = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
 
-    for _ in range(0, DELAY_LENGTH):
-        add_coord(coords, coords[-3], coords[-2], 0)
+    if (DELAYS): 
+        # Turns off colour at the current location
+        for _ in range(0, DELAY_LENGTH):
+            add_coord(coords, coords[-3], coords[-2], 0)
+
+        # Moves to the Start of the Paddle with the colour still off
+        initial_x = int(x_center + radius * np.cos(angle))
+        initial_y = int(y_center + radius * np.sin(angle))
+        for _ in range(0, DELAY_LENGTH):
+            add_coord(coords, initial_x, initial_y, 0) 
     
     # Calculate the x and y coordinates of the points
     for angle in angles:
@@ -239,4 +256,5 @@ readThread.start()
 
 
 DELAY_LENGTH = 2
+DELAYS = True
 start_pong_game()
