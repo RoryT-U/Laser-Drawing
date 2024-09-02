@@ -1,13 +1,17 @@
 import pygame
 import random
 import numpy as np
+import serial
+import time
+from threading import Thread
+import random
 
 def start_pong_game():
     # Initialize pygame
     pygame.init()
 
     # Set up the screen
-    width, height = 800, 600
+    width, height = 255, 255
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Pong Game")
 
@@ -17,13 +21,13 @@ def start_pong_game():
 
     # Ball settings
     default_ball_speed = 4
-    ball_radius = 15
+    ball_radius = 5
     ball_velocity_x = default_ball_speed * random.choice((1, -1))
     ball_velocity_y = 0.1
     ball_x, ball_y = width // 2, height // 2
 
     # Paddle settings
-    paddle_width, paddle_height = 20, 100
+    paddle_width, paddle_height = 5, 30
     paddle_velocity = 7
     player_one_x, player_one_y = 10, height // 2 - paddle_height // 2
     player_two_x, player_two_y = width - 10 - paddle_width, height // 2 - paddle_height // 2
@@ -43,14 +47,27 @@ def start_pong_game():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] and player_one_y > 0:
             player_one_y -= paddle_velocity
+
+            if (player_one_y < 0):
+                player_one_y = 0
+
         if keys[pygame.K_s] and player_one_y < height - paddle_height:
             player_one_y += paddle_velocity
 
+            if (player_one_y > height - paddle_height):
+                player_one_y = height - paddle_height
+
         if keys[pygame.K_UP] and player_two_y > 0:
             player_two_y -= paddle_velocity
+
+            if (player_two_y < 0):
+                player_two_y = 0
+
         if keys[pygame.K_DOWN] and player_two_y < height - paddle_height:
             player_two_y += paddle_velocity
 
+            if (player_two_y > height - paddle_height):
+                player_two_y = height - paddle_height
 
         # Ball movement
         ball_x += ball_velocity_x
@@ -104,14 +121,18 @@ def start_pong_game():
             ball_velocity_y = 0
         
         # Actual coordinates to draw
-        player_one_x_coordinates, player_one_y_coordinates = generate_paddle_coordinates(player_one_x, player_one_y, paddle_width, paddle_height, 200)
+        to_send = []
+        add_paddle_coords(to_send, player_one_x, player_one_y, paddle_width, paddle_height, 100, 255, False)
 
-        player_two_x_coordinates, player_two_y_coordinates = generate_paddle_coordinates(player_two_x, player_two_y, paddle_width, paddle_height, 200)
+        add_ball_coords(to_send, ball_x, ball_y, ball_radius, 50, 255)
+        
+        add_paddle_coords(to_send, player_two_x, player_two_y, paddle_width, paddle_height, 100, 255, True)
 
-        ball_coordinates = generate_ball_coordinates(ball_x, ball_y, ball_radius, 100)
-
-        # TODO NEED TO SEND THE COORDINATES TO PSoC
-
+        to_send.extend([128, 128, 0, 128, 128, 0]) # Pause Drawing at end to try and reduce streaks
+        
+        to_send.extend([13,13,13,13,13,13])
+        print(len(to_send))
+        # serialPort.write(bytearray(list(to_send)))
 
         # Pygame Stuff
         # Clear screen
@@ -134,62 +155,88 @@ def start_pong_game():
         pygame.display.flip()
 
         # Frame rate
-        pygame.time.Clock().tick(60)
+        pygame.time.Clock().tick(15)
 
     # Quit pygame
     pygame.quit()
 
 # Paddles to Coordinates
-def generate_paddle_coordinates(paddle_x, paddle_y, paddle_width, paddle_height, num_points):
+def add_paddle_coords(coords:list, paddle_x, paddle_y, paddle_width, paddle_height, num_points, colour, delay):
 
-    increment = (paddle_width*2 + paddle_height*2)/num_points
+    increment = int(np.ceil((paddle_width*2 + paddle_height*2)/num_points))
     
-    x_coordinates = []
-    y_coordinates = []
-    
+    if (delay and len(coords) > 3):
+        for _ in range(0, DELAY_LENGTH):
+            add_coord(coords, coords[-3], coords[-2], 0)
+
     # Top Left to Top Right
     for x1 in range(paddle_x, paddle_x+paddle_width, increment):
-        x_coordinates.append(x1)
-        y_coordinates.append(paddle_y)
+        add_coord(coords, x1, paddle_y, colour)
 
-    x_coordinates.append(paddle_x+paddle_width)
-    y_coordinates.append(paddle_y)
+    add_coord(coords, paddle_x+paddle_width, paddle_y, colour)
 
     # Top Right to Bottom Right
     for y1 in range(paddle_y, paddle_y+paddle_height, increment):
-        x_coordinates.append(paddle_x+paddle_width)
-        y_coordinates.append(y1)
+        add_coord(coords, paddle_x+paddle_width, y1, colour)
 
-    x_coordinates.append(paddle_x+paddle_width)
-    y_coordinates.append(paddle_y+paddle_height)
+    add_coord(coords, paddle_x+paddle_width, paddle_y+paddle_height, colour)
 
     # Bottom Right to Bottom Left
     for x2 in range(paddle_x+paddle_width, paddle_x, -increment):
-        x_coordinates.append(x2)
-        y_coordinates.append(paddle_y+paddle_height)
+        add_coord(coords, x2, paddle_y+paddle_height, colour)
 
-    x_coordinates.append(paddle_x)
-    y_coordinates.append(paddle_y+paddle_height)
+    add_coord(coords, paddle_x, paddle_y+paddle_height, colour)
 
     # Bottom Left to Top Left
     for y2 in range(paddle_y+paddle_height, paddle_y, -increment):
-        x_coordinates.append(paddle_x)
-        y_coordinates.append(y2)
+        add_coord(coords, paddle_x, y2, colour)
 
-    x_coordinates.append(paddle_x)
-    y_coordinates.append(paddle_y)
-
-    return x_coordinates, y_coordinates
+    add_coord(coords, paddle_x, paddle_y, colour)
 
 
-def generate_ball_coordinates(x_center, y_center, radius, num_points):
+def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour):
     # Generate angles evenly spaced around the circle
     angles = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
+
+    for _ in range(0, DELAY_LENGTH):
+        add_coord(coords, coords[-3], coords[-2], 0)
     
     # Calculate the x and y coordinates of the points
-    x_coordinates = x_center + radius * np.cos(angles)
-    y_coordinates = y_center + radius * np.sin(angles)
+    for angle in angles:
+        x = int(x_center + radius * np.cos(angle))
+        y = int(y_center + radius * np.sin(angle))
 
-    return x_coordinates, y_coordinates
+        if (x >= 0 and x <= 255 and y >= 0 and y <= 255):
+            add_coord(coords, int(x_center + radius * np.cos(angle)), int(y_center + radius * np.sin(angle)), colour)
 
+def add_coord(coords:list, x, y, colour):
+    coords.append(x)
+    coords.append(y)
+    coords.append(colour)
+
+# #init serial
+# serialPort = serial.Serial(
+#     port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+# )
+
+# def readSerial():
+#     successes = 0
+#     while 1:
+#     # Read data out of the buffer until a carraige return / new line is found
+#         #serialString = serialPort.read_until(expected="\n", size=10)
+
+#         serialString = serialPort.readline()
+#         if serialString:
+#             try:
+#                 print(serialString.decode("ascii"))
+#             except:
+#                 print(serialString)
+
+
+# readThread = Thread(target = readSerial)
+# readThread.daemon = True
+# readThread.start()
+
+
+DELAY_LENGTH = 2
 start_pong_game()
