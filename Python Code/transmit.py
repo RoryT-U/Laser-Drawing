@@ -1,9 +1,11 @@
+import math
 import time
-import random
 import csv
+
 import PSoCBridge
 
-PSoCBridge.Initialise("COM5")
+# connect to COM port and PSoC
+PSoC = PSoCBridge.PSoCBridge()
 
 def readCSV(filename):
   with open(filename, 'r') as csvfile:
@@ -33,50 +35,23 @@ def getBytesOfCSV(filename):
 
     output = []
     for i in range(len(xLst)):
-        output.extend([xLst[i], yLst[i], 255])
+        color = 255
+        # if i > 0 and (abs(xLst[i]-xLst[i-1]) + abs(yLst[i]-yLst[i-1])) > 25:    # Euclidean (faster??)
+        if i > 0 and math.sqrt(math.pow(xLst[i]-xLst[i-1], 2) + math.pow(yLst[i]-yLst[i-1],2)) > 25:
+            color = 0
+        output.extend([xLst[i], yLst[i], color])
 
-    return bytearray(output + [13,13,13])
-
-
-#### READ DATA
-DATA = getBytesOfCSV("mike-1000")
-
-#DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
-
-def dataTest():
-    FRAMES = 50
-    # send frames
-    start = time.perf_counter()
-    for i in range(0,FRAMES):
-        serialPort.write(DATA)
-    serialPort.write(bytearray([13,13,13,13]))
-
-    # wait for ACK
-    while 1:
-        serialString = serialPort.readline()
-        if serialString:
-            print(serialString.decode("ascii"))
-            break
-
-    stop = time.perf_counter()
-    elapsed = stop - start
-    numBytes = FRAMES*len(DATA)
-    print(f"recieved {FRAMES} frames ({numBytes} bytes) in {elapsed:0.4f} seconds ({numBytes*8/elapsed/1000:0.0f} Kbps)")
-
+    return bytearray(output)
 
 def transmit(filename):
-    transmitting = getBytesOfCSV(filename)
-    serialPort.write(transmitting)
-    print(f"sent {len(transmitting)} bytes")
+    PSoC.write(getBytesOfCSV(filename))
     time.sleep(3)
 
 while 1:
     userInput = input()
 
-    if (userInput == "data"):
-        sendData()
-    elif (userInput == "speed"):
-        dataTest()
+    if (userInput == "speed"):
+        PSoC.speed_test()
 
     elif (userInput == "test"):
         transmit("atom-500")
@@ -88,14 +63,16 @@ while 1:
         transmit("mike-750")
         transmit("mike-1000")
 
-
-    elif (userInput == "pause"):
-        serialPort.write(bytearray([0,13,13,13]))
+    # turn laser ON/OFF
+    elif (userInput == "ON"):
+        PSoC.write([255,255,255])
+    elif (userInput == "OFF"):
+        PSoC.write([0,0,0])
     elif (userInput[:5] == "send "):
         print(userInput[5:])
         transmit(userInput[5:])
     else:
-        serialPort.write(str.encode(userInput, "ascii"))
+        PSoC.write_unterminated(str.encode(userInput, "ascii"))
 
 
 
