@@ -27,7 +27,7 @@ def start_pong_game():
     ball_x, ball_y = width // 2, height // 2
 
     # Paddle settings
-    paddle_width, paddle_height = 10, 50
+    paddle_width, paddle_height = 5, 30
     paddle_velocity = 7
     player_one_x, player_one_y = 10, height // 2 - paddle_height // 2
     player_two_x, player_two_y = width - 10 - paddle_width, height // 2 - paddle_height // 2
@@ -122,11 +122,11 @@ def start_pong_game():
         
         # Actual coordinates to draw
         to_send = []
-        add_paddle_coords(to_send, player_one_x, player_one_y, paddle_width, paddle_height, 100, 255, False)
+        add_paddle_coords(to_send, player_one_x, player_one_y, 255)
 
         add_ball_coords(to_send, ball_x, ball_y, ball_radius, 50, 255)
         
-        add_paddle_coords(to_send, player_two_x, player_two_y, paddle_width, paddle_height, 100, 255, True)
+        add_paddle_coords(to_send, player_two_x, player_two_y, 255)
 
         if DELAYS:
             # Pause Drawing at end to try and reduce streaks
@@ -136,7 +136,7 @@ def start_pong_game():
 
         to_send.extend([13,13,13,13,13,13])
         print(len(to_send))
-        #serialPort.write(bytearray(list(to_send)))
+        serialPort.write(bytearray(list(to_send)))
 
         # Pygame Stuff
         # Clear screen
@@ -164,45 +164,31 @@ def start_pong_game():
     # Quit pygame
     pygame.quit()
 
-# Paddles to Coordinates
-def add_paddle_coords(coords:list, paddle_x, paddle_y, paddle_width, paddle_height, num_points, colour, delay):
+# Theses are generated from paddle_offset and then slightly reorder
+paddle_1_coordinate_offset = [[9, 27], [9, 32], [9, 37], [9, 42], [9, 47], [9, 47], [9, 47], [9, 48], [9, 48], [9, 48], [9, 49], [9, 49], [9, 49], [8, 49], [8, 49], [8, 49], [7, 49], [7, 49], 
+[7, 49], [2, 49], [2, 49], [2, 49], [1, 49], [1, 49], [1, 49], [0, 49], [0, 49], [0, 49], [0, 48], [0, 48], [0, 48], [0, 47], [0, 47], [0, 47], [0, 42], [0, 37], [0, 32], [0, 27], [0, 22], [0, 17], [0, 12], [0, 7],[0, 2], [0, 2], [0, 2], [0, 1], [0, 1], [0, 1], [0, 0], [0, 0], [0, 0], [1, 0], [1, 0], [1, 0], [2, 0], [2, 0], [2, 0], [7, 0], [7, 0], [7, 0], [8, 0], [8, 0], [8, 0], [9, 0], [9, 0], [9, 0], [9, 1], [9, 1], [9, 1], [9, 2], [9, 2], [9, 2], [9, 7], [9, 12], [9, 17], [9, 22]]
 
-    increment = int(np.ceil((paddle_width*2 + paddle_height*2)/num_points))
-    
-    if (DELAYS and delay and len(coords) > 3):
-        # Turns off colour at the current location
+paddle_2_coordinate_offset = [[0, 27], [0, 22], [0, 17], [0, 12], [0, 7],[0, 2], [0, 2], [0, 2], [0, 1], [0, 1], [0, 1], [0, 0], [0, 0], [0, 0], [1, 0], [1, 0], [1, 0], [2, 0], [2, 0], [2, 0], [7, 0], [7, 0], [7, 0], [8, 0], [8, 0], [8, 0], [9, 0], [9, 0], [9, 0], [9, 1], [9, 1], [9, 1], [9, 2], [9, 2], [9, 2], [9, 7], [9, 12], [9, 17], [9, 22], [9, 27], [9, 32], [9, 37], [9, 42], [9, 47], [9, 47], [9, 47], [9, 48], [9, 48], [9, 48], [9, 49], [9, 49], [9, 49], [8, 49], [8, 49], [8, 49], [7, 49], [7, 49], 
+[7, 49], [2, 49], [2, 49], [2, 49], [1, 49], [1, 49], [1, 49], [0, 49], [0, 49], [0, 49], [0, 48], [0, 48], [0, 48], [0, 47], [0, 47], [0, 47], [0, 42], [0, 37], [0, 32]]
+
+# Paddles to Coordinates
+def add_paddle_coords(coords:list, paddle_x, paddle_y, colour, delay):
+
+    if (DELAYS):
+      # Turns off colour at the current location
+      if (len(coords) > 3):
         for _ in range(0, DELAY_LENGTH):
             add_coord(coords, coords[-3], coords[-2], 0)
 
-        # Moves to the Start of the Paddle with the colour still off
-        for _ in range(0, DELAY_LENGTH):
-            add_coord(coords, paddle_x, paddle_y, 0) 
+      offset = paddle_1_coordinate_offset[0]
+      # Moves to the Start of the Paddle with the colour still off
+      for _ in range(0, DELAY_LENGTH):
+          add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], 0) 
 
-    # Top Left to Top Right
-    for x1 in range(paddle_x, paddle_x+paddle_width, increment):
-        add_coord(coords, x1, paddle_y, colour)
+    for offset in paddle_1_coordinate_offset:
+      add_coord(paddle_x+offset[0], paddle_y+offset[1], colour)
 
-    add_coord(coords, paddle_x+paddle_width, paddle_y, colour)
-
-    # Top Right to Bottom Right
-    for y1 in range(paddle_y, paddle_y+paddle_height, increment):
-        add_coord(coords, paddle_x+paddle_width, y1, colour)
-
-    add_coord(coords, paddle_x+paddle_width, paddle_y+paddle_height, colour)
-
-    # Bottom Right to Bottom Left
-    for x2 in range(paddle_x+paddle_width, paddle_x, -increment):
-        add_coord(coords, x2, paddle_y+paddle_height, colour)
-
-    add_coord(coords, paddle_x, paddle_y+paddle_height, colour)
-
-    # Bottom Left to Top Left
-    for y2 in range(paddle_y+paddle_height, paddle_y, -increment):
-        add_coord(coords, paddle_x, y2, colour)
-
-    add_coord(coords, paddle_x, paddle_y, colour)
-
-
+    
 def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour):
     # Generate angles evenly spaced around the circle
     angles = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
@@ -213,8 +199,8 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
             add_coord(coords, coords[-3], coords[-2], 0)
 
         # Moves to the Start of the Paddle with the colour still off
-        initial_x = int(x_center + radius * np.cos(angles[0]))
-        initial_y = int(y_center + radius * np.sin(angles[0]))
+        initial_x = int(x_center + radius * np.cos(angle))
+        initial_y = int(y_center + radius * np.sin(angle))
         for _ in range(0, DELAY_LENGTH):
             add_coord(coords, initial_x, initial_y, 0) 
     
@@ -231,28 +217,28 @@ def add_coord(coords:list, x, y, colour):
     coords.append(y)
     coords.append(colour)
 
-# #init serial
-# serialPort = serial.Serial(
-#     port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
-# )
+#init serial
+serialPort = serial.Serial(
+    port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+)
 
-# def readSerial():
-#     successes = 0
-#     while 1:
-#     # Read data out of the buffer until a carraige return / new line is found
-#         #serialString = serialPort.read_until(expected="\n", size=10)
+def readSerial():
+    successes = 0
+    while 1:
+    # Read data out of the buffer until a carraige return / new line is found
+        #serialString = serialPort.read_until(expected="\n", size=10)
 
-#         serialString = serialPort.readline()
-#         if serialString:
-#             try:
-#                 print(serialString.decode("ascii"))
-#             except:
-#                 print(serialString)
+        serialString = serialPort.readline()
+        if serialString:
+            try:
+                print(serialString.decode("ascii"))
+            except:
+                print(serialString)
 
 
-# readThread = Thread(target = readSerial)
-# readThread.daemon = True
-# readThread.start()
+readThread = Thread(target = readSerial)
+readThread.daemon = True
+readThread.start()
 
 
 DELAY_LENGTH = 2
