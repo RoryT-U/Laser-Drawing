@@ -133,7 +133,6 @@ def start_pong_game():
             for _ in range(0, DELAY_LENGTH):
                 to_send.extend([128, 128, 0]) 
 
-
         to_send.extend([13,13,13,13,13,13])
         print(len(to_send))
         #serialPort.write(bytearray(list(to_send)))

@@ -172,7 +172,7 @@ paddle_2_coordinate_offset = [[0, 27], [0, 22], [0, 17], [0, 12], [0, 7],[0, 2],
 [7, 49], [2, 49], [2, 49], [2, 49], [1, 49], [1, 49], [1, 49], [0, 49], [0, 49], [0, 49], [0, 48], [0, 48], [0, 48], [0, 47], [0, 47], [0, 47], [0, 42], [0, 37], [0, 32]]
 
 # Paddles to Coordinates
-def add_paddle_coords(coords:list, paddle_x, paddle_y, colour, delay):
+def add_paddle_coords(coords:list, paddle_x, paddle_y, colour):
 
     if (DELAYS):
       # Turns off colour at the current location
@@ -186,7 +186,7 @@ def add_paddle_coords(coords:list, paddle_x, paddle_y, colour, delay):
           add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], 0) 
 
     for offset in paddle_1_coordinate_offset:
-      add_coord(paddle_x+offset[0], paddle_y+offset[1], colour)
+      add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], colour)
 
     
 def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour):
@@ -199,8 +199,8 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
             add_coord(coords, coords[-3], coords[-2], 0)
 
         # Moves to the Start of the Paddle with the colour still off
-        initial_x = int(x_center + radius * np.cos(angle))
-        initial_y = int(y_center + radius * np.sin(angle))
+        initial_x = int(x_center + radius * np.cos(angles[0]))
+        initial_y = int(y_center + radius * np.sin(angles[0]))
         for _ in range(0, DELAY_LENGTH):
             add_coord(coords, initial_x, initial_y, 0) 
     
