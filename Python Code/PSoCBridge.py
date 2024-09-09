@@ -12,14 +12,18 @@ class PSoCBridge:
         '''
         Initialises communication between PC and PSoC. Tries COM1 to COM5
         '''
+        connected = False
         for i in range(5):
             try:
                 self.connect(f"COM{i}")
+                connected = True
                 break
             except serial.SerialException:
                 continue
-
-        raise FileNotFoundError("Could not find an open COM port")
+        
+        if (not connected):
+            raise FileNotFoundError("Could not find an open COM port")
+        
 
 
     def connect(self, comPort):

@@ -69,4 +69,4 @@ def paddle_offset_generation(paddle_width, paddle_height, corner_length, side_in
 
 
 
-paddle_offset_generation(10, 50, 3, 5, 3)
+paddle_offset_generation(10, 50, 3, 5, 1)

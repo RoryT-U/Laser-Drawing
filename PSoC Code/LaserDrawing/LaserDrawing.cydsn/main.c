@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 #if defined(__GNUC__)
+
 #endif
 
 #define USBFS_DEVICE (0u)
@@ -43,49 +44,46 @@ uint8 const LINE_STR_LENGTH = 128;
 
 int main()
 {
-    uint16 drawDelay = 30;          // ms before moving to the next point... gives time for galvos to move...
-    char8 readBuffer[30000];        // 30kB == 10,000 points
-    // [xPos1, yPos1, PosColor1, xPos2, yPos2, PosColor2, ... ]
-    uint16 readBufferLen = 0;       // Bytes read in the read buffer (multiple of 3)
-    uint16 readBufferItr = 0;       // Current position/point in read buffer
-    uint16 messageLen = 0;          // bytes read from USB (including terminator)
-    
-    uint16 packetLen;                           // bytes read in this packet (max 64)
-    uint8 packetBuffer[USBUART_BUFFER_SIZE];    // the packet itself
+    char8 readBuffer[15000];
+    uint16 readBufferLen = 0;
+    uint16 readBufferItr = 0;
+    uint16 readBytes = 0;
+    uint16 successes = 0;
 
-    uint8 state;                        // for USBUART stats
-    char8 printBuffer[LINE_STR_LENGTH]; // string buffer for printing
+    uint16 count;
+    uint8 buffer[USBUART_BUFFER_SIZE];
 
-    CyGlobalIntEnable;  // enable interupts
+    uint8 state;
+    char8 lineStr[LINE_STR_LENGTH];
 
-    /* TESTING: A Circle of points. To use, set below TEST flag to 1. */
-    uint8 TEST = 0;
+    CyGlobalIntEnable;
 
+    /* TESTING */
     uint16 POINTS = 2040;
-    uint16 RESOLUTION = 255;
-    int testCount = 0;
+    uint16 RES = 255;
     int yAxis[POINTS];
     int xAxis[POINTS];
-    int color[POINTS];
 
     for (int i = 0; i < POINTS; i++)
     {
-        xAxis[i] = RESOLUTION * sin(2 * M_PI * i / POINTS) + RESOLUTION / 2;
-        yAxis[i] = RESOLUTION * cos(2 * M_PI * i / POINTS) + RESOLUTION / 2;
-        color[i] = RESOLUTION * cos(2 * M_PI * i / POINTS) + RESOLUTION / 2;
+        xAxis[i] = RES * sin(2 * M_PI * i / POINTS) + RES / 2;
+        yAxis[i] = RES * cos(2 * M_PI * i / POINTS) + RES / 2;
     }
+
+    int testCount = 0;
 
     /* Start USBFS operation with 5-V operation. */
     USBUART_Start(USBFS_DEVICE, USBUART_5V_OPERATION);
 
-    // start VDACs
+    // start DVDACs
+
     VDAC8_X_Start();
     VDAC8_Y_Start();
     VDAC8_R_Start();
-    VDAC8_G_Start();
-    VDAC8_B_Start();
 
-    while (0u == USBUART_GetConfiguration()) {};    // ensure USB is ready...
+    while (0u == USBUART_GetConfiguration())
+    {
+    };
     // USBUART_PutString("Connection Ready \r\n");
 
     for (;;)
@@ -105,54 +103,68 @@ int main()
         /* Service USB CDC when device is configured. */
         if (0u != USBUART_GetConfiguration())
         {
-            /* Check if data is ready to be recieved */
+            /* Check for input data from host. */
             if (0u != USBUART_DataIsReady())
             {
                 /* Read received data and re-enable OUT endpoint. */
-                packetLen = USBUART_GetAll(packetBuffer);
+                count = USBUART_GetAll(buffer);
 
-                if (0u != packetLen)
+                if (0u != count)
                 {
-                    /* Echo data back to host. */
+                    /* Send data back to host. */
                     // while (0u == USBUART_CDCIsReady()) {}
-                    // USBUART_PutData(packetBuffer, packetLen);
+                    // USBUART_PutData(buffer, count);
 
-                    memcpy(&readBuffer[messageLen], packetBuffer, packetLen);   // add to read buffer
-                    messageLen += packetLen;
+                    memcpy(&readBuffer[readBytes], buffer, count);
+                    readBytes += count;
 
-                    // sprintf(printBuffer, "Just Read %d bits! total of %d \r\r\r", packetLen, messageLen);
+                    // sprintf(lineStr, "Just Read %d bits! total of %d \r\r\r", count, readBytes);
                     // while (0u == USBUART_CDCIsReady()) {}
-                    // USBUART_PutString(printBuffer);
+                    // USBUART_PutString(lineStr);
 
-                    // check for termination string... 3 bytes of value 13
-                    if (packetLen > 3 && packetBuffer[packetLen - 1] == 13 && packetBuffer[packetLen - 2] == 13 && packetBuffer[packetLen - 3] == 13)
+                    // currently using 3 returns to indicate end, ASCII 13
+                    if (count > 3 && buffer[count - 1] == 13 && buffer[count - 2] == 13 && buffer[count - 3] == 13)
                     {
-                        readBufferLen = messageLen - 3;
-                        messageLen = 0;
+                        sprintf(lineStr, "Recieved %d bytes!\r\r\r", readBytes);
+                        while (0u == USBUART_CDCIsReady())
+                        {
+                        }
+                        USBUART_PutString(lineStr);
 
-                        sprintf(printBuffer, "Read buffer has %d bytes!\r\r\r", readBufferLen);
-                        while (0u == USBUART_CDCIsReady()) {} // ensure USB is ready to send...
-                        USBUART_PutString(printBuffer);
+                        readBufferLen = readBytes - 3;
+                        readBytes = 0;
 
-                        // memset(packetBuffer, 0, messageLen); // takes too many cpu cycles, just overwrite
+                        // if (readBytes == 1503) {
+                        //     successes++;
+                        // }
+
+                        // if (count > 3 && buffer[count - 4] == 13) {
+                        //     sprintf(lineStr, "%d", successes);
+                        //     while (0u == USBUART_CDCIsReady()) {}
+                        //     USBUART_PutString(lineStr);
+                        // }
+
+                        // memset(buffer, 0, readBytes); // takes too many cpu cycles, just overwrite
                     }
                 }
 
                 /* statistics */
-                if (packetLen == 1)
+                if (count == 1)
                 {
                     uint8 state = USBUART_GetLineControl();
                     /* Get string to output. */
-                    sprintf(printBuffer, "BR: %4ld DB: %d DTR:%s,RTS:%s", USBUART_GetDTERate(),
+                    sprintf(lineStr, "BR: %4ld DB: %d DTR:%s,RTS:%s", USBUART_GetDTERate(),
                             (uint16)USBUART_GetDataBits(),
                             (0u != (state & USBUART_LINE_CONTROL_DTR)) ? "ON" : "OFF",
                             (0u != (state & USBUART_LINE_CONTROL_RTS)) ? "ON" : "OFF");
-                    USBUART_PutString(printBuffer);
+                    USBUART_PutString(lineStr);
                 }
             }
         }
 
-        /* HARDCODED TESTING */
+        /* TESTING */
+        uint8 TEST = 0;
+
         if (TEST == 1)
         {
             if (testCount >= POINTS)
@@ -161,40 +173,31 @@ int main()
             }
 
             VDAC8_1_SetValue(xAxis[testCount]);
-            VDAC8_2_SetValue(yAxis[testCount]);
+            VDAC8_1_SetValue(yAxis[testCount]);
 
             testCount += 1;
         }
         else
         {
-            // error if buffer is not a multiple of 3...
-            if (readBufferLen % 3 != 3) {
-                sprintf(printBuffer, "Recieved %d bytes. Not a multiple of 3...!\r\r\r", readBufferLen);
-                while (0u == USBUART_CDCIsReady()) {} // ensure USB is ready to send...
-                USBUART_PutString(printBuffer);
-                continue;   // not a valid set of points (image)
+
+            // draw the thing (multiply by 16 if its small lol)
+            if (readBufferLen < 3)
+            {
+                continue;   // not an image
             }
             if (readBufferItr > readBufferLen)
             {
-                readBufferItr = 0;      // redraw image
+                readBufferItr = 0;
             }
 
-            // get values
-            uint8 xPos = readBuffer[readBufferItr];
-            uint8 yPos = readBuffer[readBufferItr+1];
-            // for 2-bits per color = 64 colours
-            uint8 color = readBuffer[readBufferItr+2];
-            uint8 rValue = (color >> 6) & 0b11;
-            uint8 gValue = (color >> 4) & 0b11;
-            uint8 bValue = (color >> 2) & 0b11;
-            uint8 excess = color & 0b11;
+            // DVDAC_1_SetValue(readBuffer[readBufferItr]*16);
+            // DVDAC_2_SetValue(readBuffer[readBufferItr+1]*16);
 
-            VDAC8_X_SetValue(xPos);
-            VDAC8_Y_SetValue(yPos);
-            VDAC8_R_SetValue(rValue);
-            // VDAC8_G_SetValue(gValue);
-            // VDAC8_B_SetValue(bValue);
-            CyDelayUs(drawDelay);
+            VDAC8_X_SetValue(readBuffer[readBufferItr]);
+            VDAC8_Y_SetValue(readBuffer[readBufferItr + 1]);
+            VDAC8_R_SetValue(readBuffer[readBufferItr + 2]);
+            CyDelayUs(30);
+            // TODO: code to change brightness here
 
             readBufferItr = readBufferItr + 3;
         }

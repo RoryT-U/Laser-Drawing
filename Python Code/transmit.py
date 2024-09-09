@@ -1,11 +1,19 @@
-import math
+# pip install pyserial
+
+
+# note we only support 8 bits at the moment!
+
+import serial
 import time
+from threading import Thread
+import random
 import csv
+import math
+import numpy as np
 
-import PSoCBridge
-
-# connect to COM port and PSoC
-PSoC = PSoCBridge.PSoCBridge()
+serialPort = serial.Serial(
+    port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+)
 
 def readCSV(filename):
   with open(filename, 'r') as csvfile:
@@ -35,23 +43,106 @@ def getBytesOfCSV(filename):
 
     output = []
     for i in range(len(xLst)):
-        color = 255
-        # if i > 0 and (abs(xLst[i]-xLst[i-1]) + abs(yLst[i]-yLst[i-1])) > 25:    # Euclidean (faster??)
-        if i > 0 and math.sqrt(math.pow(xLst[i]-xLst[i-1], 2) + math.pow(yLst[i]-yLst[i-1],2)) > 25:
-            color = 0
-        output.extend([xLst[i], yLst[i], color])
+        output.extend([xLst[i], yLst[i], 255])
 
-    return bytearray(output)
+    return bytearray(output + [13,13,13])
+
+
+#### READ DATA
+DATA = getBytesOfCSV("mike-1000")
+
+#DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
+
+
+def readSerial():
+    successes = 0
+    while 1:
+    # Read data out of the buffer until a carraige return / new line is found
+        #serialString = serialPort.read_until(expected="\n", size=10)
+
+        serialString = serialPort.readline()
+        if serialString:
+            try:
+                print(serialString.decode("ascii"))
+            except:
+                print(serialString)
+
+
+readThread = Thread(target = readSerial)
+readThread.daemon = True
+readThread.start()
+
+
+def dataTest():
+    FRAMES = 50
+    # send frames
+    start = time.perf_counter()
+    for i in range(0,FRAMES):
+        serialPort.write(DATA)
+    serialPort.write(bytearray([13,13,13,13]))
+
+    # wait for ACK
+    while 1:
+        serialString = serialPort.readline()
+        if serialString:
+            print(serialString.decode("ascii"))
+            break
+
+    stop = time.perf_counter()
+    elapsed = stop - start
+    numBytes = FRAMES*len(DATA)
+    print(f"recieved {FRAMES} frames ({numBytes} bytes) in {elapsed:0.4f} seconds ({numBytes*8/elapsed/1000:0.0f} Kbps)")
+
+
+def sendData():
+    serialPort.write(DATA)
+    print(f"sent {len(DATA)} bytes")
 
 def transmit(filename):
-    PSoC.write(getBytesOfCSV(filename))
+    transmitting = getBytesOfCSV(filename)
+    serialPort.write(transmitting)
+    print(f"sent {len(transmitting)} bytes")
     time.sleep(3)
+
+def broken_cirle():
+    POINTS = 2040
+    RES = 255
+    arr = []
+
+    for i in range(POINTS):
+        x = RES * math.sin(2 * math.pi * i / POINTS) + RES / 2
+        y = RES * math.cos(2 * math.pi * i / POINTS) + RES / 2
+        if x > 255 or y > 255:
+            print(x,y,"shit")
+        arr.extend([int(math.floor(x)),int(math.floor(y)), 0 if i%2 else 255])
+    arr.extend([13,13,13])
+    return arr
+
+def circle():
+    POINTS = 200
+    x = np.linspace(0, POINTS, POINTS)
+    sine = np.round(127 * np.sin((2*np.pi*x)/POINTS)+128)
+    cos = np.round(127 * np.cos((2*np.pi*x)/POINTS)+128)
+
+    arr = []
+    count = 0
+    for i in range(POINTS):
+
+        arr.extend([int(sine[i]), int(cos[i]), 0 if i%2 else 255])
+
+    arr.extend([13,13,13])
+
+    print(arr)
+    return arr
+
 
 while 1:
     userInput = input()
 
-    if (userInput == "speed"):
-        PSoC.speed_test()
+    if (userInput == "data"):
+        sendData()
+    elif (userInput == "speed"):
+        dataTest()
 
     elif (userInput == "test"):
         transmit("atom-500")
@@ -62,17 +153,20 @@ while 1:
         transmit("image-1500")
         transmit("mike-750")
         transmit("mike-1000")
-
-    # turn laser ON/OFF
+# turn laser ON/OFF
     elif (userInput == "ON"):
-        PSoC.write([255,255,255])
+        serialPort.write(bytearray([255,255,255,13,13,13]))
     elif (userInput == "OFF"):
-        PSoC.write([0,0,0])
+        serialPort.write(bytearray([0,0,0,13,13,13]))
+    elif (userInput == "circle"):
+        serialPort.write(bytearray(circle()))
+    elif (userInput == "pause"):
+        serialPort.write(bytearray([0,13,13,13]))
     elif (userInput[:5] == "send "):
         print(userInput[5:])
         transmit(userInput[5:])
-    else:
-        PSoC.write_unterminated(str.encode(userInput, "ascii"))
 
+    else:
+        serialPort.write(str.encode(userInput, "ascii"))
 
 

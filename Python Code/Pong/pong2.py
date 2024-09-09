@@ -122,16 +122,16 @@ def start_pong_game():
         
         # Actual coordinates to draw
         to_send = []
-        add_paddle_coords(to_send, player_one_x, player_one_y, 255)
-
+        add_paddle_one_coords(to_send, player_one_x, player_one_y, 255)
         add_ball_coords(to_send, ball_x, ball_y, ball_radius, 50, 255)
-        
-        add_paddle_coords(to_send, player_two_x, player_two_y, 255)
+        add_paddle_two_coords(to_send, player_two_x, player_two_y, 255)
 
         if DELAYS:
             # Pause Drawing at end to try and reduce streaks
+            previous_x = to_send[-3]
+            previous_y = to_send[-2]
             for _ in range(0, DELAY_LENGTH):
-                to_send.extend([128, 128, 0]) 
+                to_send.extend([previous_x, previous_y, 0]) 
 
 
         to_send.extend([13,13,13,13,13,13])
@@ -172,7 +172,7 @@ paddle_2_coordinate_offset = [[0, 27], [0, 22], [0, 17], [0, 12], [0, 7],[0, 2],
 [7, 49], [2, 49], [2, 49], [2, 49], [1, 49], [1, 49], [1, 49], [0, 49], [0, 49], [0, 49], [0, 48], [0, 48], [0, 48], [0, 47], [0, 47], [0, 47], [0, 42], [0, 37], [0, 32]]
 
 # Paddles to Coordinates
-def add_paddle_coords(coords:list, paddle_x, paddle_y, colour):
+def add_paddle_one_coords(coords:list, paddle_x, paddle_y, colour):
 
     if (DELAYS):
       # Turns off colour at the current location
@@ -186,7 +186,33 @@ def add_paddle_coords(coords:list, paddle_x, paddle_y, colour):
           add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], 0) 
 
     for offset in paddle_1_coordinate_offset:
-      add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], colour)
+      y = paddle_y+offset[1]
+
+      if (paddle_y+offset[1]>255):
+        y = 255
+          
+      add_coord(coords, paddle_x+offset[0], y, colour)
+
+def add_paddle_two_coords(coords:list, paddle_x, paddle_y, colour):
+
+    if (DELAYS):
+      # Turns off colour at the current location
+      if (len(coords) > 3):
+        for _ in range(0, DELAY_LENGTH):
+            add_coord(coords, coords[-3], coords[-2], 0)
+
+      offset = paddle_2_coordinate_offset[0]
+      # Moves to the Start of the Paddle with the colour still off
+      for _ in range(0, DELAY_LENGTH):
+          add_coord(coords, paddle_x+offset[0], paddle_y+offset[1], 0) 
+
+    for offset in paddle_2_coordinate_offset:
+      y = paddle_y+offset[1]
+
+      if (paddle_y+offset[1]>255):
+        y = 255
+          
+      add_coord(coords, paddle_x+offset[0], y, colour)
 
     
 def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour):
@@ -201,8 +227,9 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
         # Moves to the Start of the Paddle with the colour still off
         initial_x = int(x_center + radius * np.cos(angles[0]))
         initial_y = int(y_center + radius * np.sin(angles[0]))
-        for _ in range(0, DELAY_LENGTH):
-            add_coord(coords, initial_x, initial_y, 0) 
+        if (initial_x >= 0 and initial_x <= 255 and initial_y >= 0 and initial_x <= 255):
+            for _ in range(0, DELAY_LENGTH):
+                add_coord(coords, initial_x, initial_y, 0) 
     
     # Calculate the x and y coordinates of the points
     for angle in angles:
@@ -241,6 +268,6 @@ readThread.daemon = True
 readThread.start()
 
 
-DELAY_LENGTH = 2
+DELAY_LENGTH = 5
 DELAYS = True
 start_pong_game()
