@@ -3,6 +3,7 @@
 
 # note we only support 8 bits at the moment!
 
+import array
 import serial
 import time
 from threading import Thread
@@ -119,7 +120,9 @@ def broken_cirle():
     return arr
 
 def circle():
-    POINTS = 200
+    POINTS = 360
+    GAP = 5
+
     x = np.linspace(0, POINTS, POINTS)
     sine = np.round(127 * np.sin((2*np.pi*x)/POINTS)+128)
     cos = np.round(127 * np.cos((2*np.pi*x)/POINTS)+128)
@@ -128,10 +131,65 @@ def circle():
     count = 0
     for i in range(POINTS):
 
-        arr.extend([int(sine[i]), int(cos[i]), 0 if i%2 else 255])
+        arr.extend([int(sine[i]), int(cos[i]), 0 if i%GAP*2 > GAP and cos[i] < 128 else 255])
 
     arr.extend([13,13,13])
 
+    print(arr)
+    return arr
+
+def square():
+    POINTS = 255
+
+    arr = []
+    for i in range(POINTS):
+        arr.extend([i,0,255])
+    arr.extend([255,0,255])
+    for i in range(POINTS):
+        arr.extend([255,i,255])
+    arr.extend([255,255,255])
+    for i in range(POINTS):
+        arr.extend([255-i,255,255])
+    arr.extend([0,255,255])
+    for i in range(POINTS):
+        arr.extend([0,255-i,255])
+    arr.extend([0,0,255])
+
+    arr.extend([13,13,13])
+    arr.extend([13,13,13])
+
+    print(arr)
+    return arr
+
+def lines():
+    points = 255
+
+    delay_start = 0
+    delay_end = 100
+    arr = []
+
+    for i in range(0,points,5):
+        arr.extend([i, 0, 255])
+    arr[-1] = 0
+    # arr.extend([255, 0, 0])
+    for _ in range(delay_start):
+        arr.extend([255, 0, 0])
+
+    for _ in range(delay_end):
+        arr.extend([0, 255, 0])
+
+    for i in range(0,points,5):
+        arr.extend([i, 255, 255])
+    
+    arr[-1] = 0
+    
+    for _ in range(delay_start):
+        arr.extend([255, 255, 0])
+
+    for _ in range(delay_end):
+        arr.extend([0, 0, 0])
+
+    arr.extend([13,13,13])
     print(arr)
     return arr
 
@@ -155,16 +213,24 @@ while 1:
         transmit("mike-1000")
 # turn laser ON/OFF
     elif (userInput == "ON"):
-        serialPort.write(bytearray([255,255,255,13,13,13]))
+        serialPort.write(bytearray([13,13,255,13,13,13]))
     elif (userInput == "OFF"):
         serialPort.write(bytearray([0,0,0,13,13,13]))
     elif (userInput == "circle"):
         serialPort.write(bytearray(circle()))
+    elif (userInput == "square"):
+        serialPort.write(bytearray(square()))
+    elif (userInput == "lines"):
+        serialPort.write(bytearray(lines()))
     elif (userInput == "pause"):
         serialPort.write(bytearray([0,13,13,13]))
     elif (userInput[:5] == "send "):
         print(userInput[5:])
         transmit(userInput[5:])
+    elif (userInput[:5] == "byte "):
+        arr = list(map(int, userInput[5:].split()))
+        bytes = bytearray(arr + [13,13,13])
+        serialPort.write(bytes)
 
     else:
         serialPort.write(str.encode(userInput, "ascii"))

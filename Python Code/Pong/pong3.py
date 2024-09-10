@@ -27,7 +27,7 @@ def start_pong_game():
     ball_x, ball_y = width // 2, height // 2
 
     # Paddle settings
-    paddle_width, paddle_height = 5, 30
+    paddle_width, paddle_height = 10, 50
     paddle_velocity = 7
     player_one_x, player_one_y = 10, height // 2 - paddle_height // 2
     player_two_x, player_two_y = width - 10 - paddle_width, height // 2 - paddle_height // 2
@@ -129,9 +129,9 @@ def start_pong_game():
         add_paddle_coords(to_send, player_two_x, player_two_y, 255, True)
         to_send[-1] = 0
 
-        to_send.extend([13,13,0])
+        to_send.extend([13,13,13,13,13,13])
         print(len(to_send))
-        #serialPort.write(bytearray(list(to_send)))
+        serialPort.write(bytearray(list(to_send)))
 
         # Pygame Stuff
         # Clear screen
@@ -199,26 +199,26 @@ def add_coord(coords:list, x, y, colour):
     coords.append(colour)
 
 #init serial
-# serialPort = serial.Serial(
-#     port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
-# )
+serialPort = serial.Serial(
+    port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+)
 
-# def readSerial():
-#     successes = 0
-#     while 1:
-#     # Read data out of the buffer until a carraige return / new line is found
-#         #serialString = serialPort.read_until(expected="\n", size=10)
+def readSerial():
+    successes = 0
+    while 1:
+    # Read data out of the buffer until a carraige return / new line is found
+        #serialString = serialPort.read_until(expected="\n", size=10)
 
-#         serialString = serialPort.readline()
-#         if serialString:
-#             try:
-#                 print(serialString.decode("ascii"))
-#             except:
-#                 print(serialString)
+        serialString = serialPort.readline()
+        if serialString:
+            try:
+                print(serialString.decode("ascii"))
+            except:
+                print(serialString)
 
 
-# readThread = Thread(target = readSerial)
-# readThread.daemon = True
-# readThread.start()
+readThread = Thread(target = readSerial)
+readThread.daemon = True
+readThread.start()
 
 start_pong_game()

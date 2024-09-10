@@ -27,7 +27,7 @@ def start_pong_game():
     ball_x, ball_y = width // 2, height // 2
 
     # Paddle settings
-    paddle_width, paddle_height = 5, 30
+    paddle_width, paddle_height = 10, 50
     paddle_velocity = 7
     player_one_x, player_one_y = 10, height // 2 - paddle_height // 2
     player_two_x, player_two_y = width - 10 - paddle_width, height // 2 - paddle_height // 2
@@ -177,6 +177,7 @@ def add_paddle_one_coords(coords:list, paddle_x, paddle_y, colour):
     if (DELAYS):
       # Turns off colour at the current location
       if (len(coords) > 3):
+        coords[-1] = 0
         for _ in range(0, DELAY_LENGTH):
             add_coord(coords, coords[-3], coords[-2], 0)
 
@@ -269,5 +270,5 @@ readThread.start()
 
 
 DELAY_LENGTH = 5
-DELAYS = True
+DELAYS = False
 start_pong_game()
