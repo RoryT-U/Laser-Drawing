@@ -49,8 +49,6 @@ def getBytesOfCSV(filename):
     return bytearray(output + [13,13,13])
 
 
-#### READ DATA
-DATA = getBytesOfCSV("mike-1000")
 
 #DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
 
@@ -165,7 +163,7 @@ def lines():
     points = 255
 
     delay_start = 0
-    delay_end = 100
+    delay_end = 20
     arr = []
 
     for i in range(0,points,5):
