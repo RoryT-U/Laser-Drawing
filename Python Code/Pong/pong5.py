@@ -22,7 +22,7 @@ def start_pong_game():
 
     # Ball settings
     INITIAL_BALL_VELOCITY_Y = 0.1
-    default_ball_speed = 6
+    default_ball_speed = 2
     ball_radius = 5
     ball_velocity_x = default_ball_speed * random.choice((1, -1))
     ball_velocity_y = INITIAL_BALL_VELOCITY_Y
@@ -135,7 +135,7 @@ def start_pong_game():
 
         if DRAW_WALLS:
             # Bottom Wall
-            for _ in range(0, LASER_ON_DELAY):
+            for _ in range(0, LASER_ON_DELAY+1):
                 add_coord(to_send, 255, 255, 0)
 
             for i in range(255, -1, -5):
@@ -145,7 +145,7 @@ def start_pong_game():
                 add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
 
             # Top Wall
-            for _ in range(0, LASER_ON_DELAY):
+            for _ in range(0, LASER_ON_DELAY+1):
                 add_coord(to_send, 0, 0, 0)
 
             for i in range(0, 256, 5):
@@ -180,7 +180,7 @@ def start_pong_game():
         pygame.display.flip()
 
         # Frame rate
-        pygame.time.Clock().tick(15)
+        pygame.time.Clock().tick(30)
 
     # Quit pygame
     pygame.quit()
@@ -205,7 +205,7 @@ def add_paddle_coords(coords:list, paddle_x, paddle_y, colour, offsets):
     
 def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour):
     # Generate angles evenly spaced around the circle
-    angles = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
+    angles = np.linspace(0.1, 2 * np.pi, num_points, endpoint=False)
 
     first = True
     first_x = 0
@@ -219,7 +219,7 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
         if (x >= 0 and x <= 255 and y >= 0 and y <= 255):
 
             if (first):
-                for _ in range(0, LASER_ON_DELAY):
+                for _ in range(0, LASER_ON_DELAY+2):
                     add_coord(coords, x, y, 0)
                 first_x = x
                 first_y = y
@@ -227,8 +227,10 @@ def add_ball_coords(coords:list, x_center, y_center, radius, num_points, colour)
                 
             add_coord(coords, x, y, colour)
 
-    for _ in range(0, LASER_OFF_DELAY):
+    for _ in range(0, LASER_OFF_DELAY+4):
         add_coord(coords, first_x, first_y, colour)
+
+    add_coord(coords, 13,13,13)
 
 
 
@@ -276,7 +278,7 @@ readThread = Thread(target = readSerial)
 readThread.daemon = True
 readThread.start()
 
-LASER_ON_DELAY = 10         # Point delay before turning the laser back on
+LASER_ON_DELAY = 7        # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5         # Point delay before turning the laser off
 DRAW_WALLS = True
 

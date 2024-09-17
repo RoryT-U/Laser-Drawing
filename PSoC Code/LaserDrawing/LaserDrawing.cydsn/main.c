@@ -68,7 +68,6 @@ int main()
     int offTicks = 0;
     int offDelay = 25;
 
-
     for (int i = 0; i < POINTS; i++)
     {
         xAxis[i] = RES * sin(2 * M_PI * i / POINTS) + RES / 2;
@@ -184,31 +183,26 @@ int main()
         }
         else
         {
-
-            // draw the thing (multiply by 16 if its small lol)
             if (readBufferLen < 3)
             {
-                continue;   // not an image
+                VDAC8_R_SetValue(0);
+                continue; // not an image
             }
             if (readBufferItr >= readBufferLen)
             {
                 readBufferItr = 0;
             }
 
-            // DVDAC_1_SetValue(readBuffer[readBufferItr]*16);
-            // DVDAC_2_SetValue(readBuffer[readBufferItr+1]*16);
-
             VDAC8_X_SetValue(readBuffer[readBufferItr]);
             VDAC8_Y_SetValue(readBuffer[readBufferItr + 1]);
             VDAC8_R_SetValue(readBuffer[readBufferItr + 2]);
 
-            int delay = readBuffer[readBufferItr + 2] > 0 ? 30 : 100;
+            int delay = readBuffer[readBufferItr + 2] ? 30 : 150;
             CyDelayUs(delay);
-            // TODO: code to change brightness here
 
             readBufferItr = readBufferItr + 3;
         }
     }
 }
 
-/* [] END OF FILE */    
+/* [] END OF FILE */

@@ -131,7 +131,7 @@ def start_flappy_bird():
 
         to_send.extend([13,13,13])
         print(len(to_send))
-        # serialPort.write(bytearray(list(to_send)))
+        serialPort.write(bytearray(list(to_send)))
 
 
         # Clear the screen
@@ -270,32 +270,32 @@ def add_coord(coords:list, x, y, colour):
     elif ( colour < 0):
         colour = 0
     
-    coords.append(x)
-    coords.append(y)
+    coords.append(255-x)
+    coords.append(255-y)
     coords.append(colour)
 
 # init serial
-# serialPort = serial.Serial(
-#     port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
-# )
+serialPort = serial.Serial(
+    port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+)
 
-# def readSerial():
-#     successes = 0
-#     while 1:
-#     # Read data out of the buffer until a carraige return / new line is found
-#         #serialString = serialPort.read_until(expected="\n", size=10)
+def readSerial():
+    successes = 0
+    while 1:
+    # Read data out of the buffer until a carraige return / new line is found
+        #serialString = serialPort.read_until(expected="\n", size=10)
 
-#         serialString = serialPort.readline()
-#         if serialString:
-#             try:
-#                 print(serialString.decode("ascii"))
-#             except:
-#                 print(serialString)
+        serialString = serialPort.readline()
+        if serialString:
+            try:
+                print(serialString.decode("ascii"))
+            except:
+                print(serialString)
 
 
-# readThread = Thread(target = readSerial)
-# readThread.daemon = True 
-# readThread.start()
+readThread = Thread(target = readSerial)
+readThread.daemon = True 
+readThread.start()
 
 LASER_ON_DELAY = 10         # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5         # Point delay before turning the laser off

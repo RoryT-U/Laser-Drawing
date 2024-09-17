@@ -73,7 +73,7 @@ while True:
         if len(points) < 2:
             continue
 
-        keep_ratio = 1500/len(points)
+        keep_ratio = 1000/len(points)
 
 
         # Randomly select a subset of points based on the keep_ratio
@@ -127,7 +127,7 @@ while True:
             LED = 255
             if dist > 10:
                 LED = 0
-                for _ in range(5):
+                for _ in range(2):
                     path.append((selected_points[next_index][0], selected_points[next_index][1], LED))
             path.append((selected_points[next_index][0], selected_points[next_index][1], LED))
             
