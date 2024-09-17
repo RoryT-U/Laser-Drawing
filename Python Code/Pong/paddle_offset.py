@@ -63,10 +63,11 @@ def paddle_offset_generation(paddle_width, paddle_height, corner_length, side_in
   for y in range(1, y_points+2):
     offsets.append([0, paddle_height - corner_length - y*side_increments])
 
+  print(len(offsets))
   print(offsets)
 
 
 
 
 
-paddle_offset_generation(10, 50, 3, 2.5, 3)
+paddle_offset_generation(10, 50, 3, 5, 1)
