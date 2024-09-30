@@ -223,8 +223,8 @@ def add_coord(coords:list, x, y, colour):
     elif ( colour < 0):
         colour = 0
     
-    coords.append(255-x)
-    coords.append(255-y)
+    coords.append(int(255-x))
+    coords.append(int(255-y))   
     coords.append(colour)
 
 # init serial
