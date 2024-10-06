@@ -50,7 +50,7 @@ def getBytesOfCSV(filename):
 
 
 
-#DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
+DATA = bytearray([random.choice(range(255)) for _ in range(997)] + [13,13,13])
 
 
 def readSerial():
