@@ -166,14 +166,14 @@ def flip_output_cycle():
         flip_output_state = 3
         PSoC.flipX, PSoC.flipY = True, True
     elif flip_output_state == 3:
-        flip_output_button.config(text="FLIPPED NONE", bg="orange", relief=tk.RAISED)
+        flip_output_button.config(text="FLIPPED NONE", bg="grey", relief=tk.RAISED)
         flip_output_state = 0
         PSoC.flipX, PSoC.flipY = False, False
 
 # FLIP OUTPUT BUTTON
 flip_output_button = tk.Button(
     top_frame,
-    text="FLIPPED NONE",
+    text="FLIP IMAGE",
     command=flip_output_cycle,
     width=20,
     height=2,
