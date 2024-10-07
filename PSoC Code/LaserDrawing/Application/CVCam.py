@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import csv
-import serial
-import pandas as pd
 from scipy.spatial import KDTree
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
 from PSoCBridge import PSoCBridge
@@ -10,33 +8,30 @@ from PSoCBridge import PSoCBridge
 
 class CV:
     segmentor = SelfiSegmentation()
+    running = True
+    show_preview = 0
 
     def __init__(self, PSoC: PSoCBridge, camera: int) -> None:
+        self.camera = camera
         self.PSoC = PSoC
         self.cap = cv2.VideoCapture(camera)
+        print(f"running CV with camera {camera}")
 
     @staticmethod
     def nothing(x):
         pass
 
+    def camera_preview(self, show_preview):
+        self.show_preview = show_preview
+
+    def stop(self):
+        self.running = False
+
     def runCV(self):
         if not self.cap.isOpened():
-            print("Error: Could not open video stream.")
-            exit()
+            raise FileNotFoundError("Camera not found! Change the selected camera!")
 
-        cv2.namedWindow("canny", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(
-            "canny", 500, 500
-        )  # Set the desired window size (width, height)
-        switch = "OFF / ON"
-        cv2.createTrackbar(switch, "canny", 1, 1, self.nothing)
-        cv2.createTrackbar("Lower", "canny", 255, 255, self.nothing)
-        cv2.createTrackbar("Upper", "canny", 255, 255, self.nothing)
-        cv2.createTrackbar("BG Threshold", "canny", 0, 1000, self.nothing)
-
-        IMG = []
-
-        while True:
+        while self.running:
             key = cv2.waitKey(1) & 0xFF
 
             ret, frame = self.cap.read()
@@ -46,26 +41,27 @@ class CV:
                 print("Error: Failed to capture image")
                 break
 
-            lower = cv2.getTrackbarPos("Lower", "canny")
-            upper = cv2.getTrackbarPos("Upper", "canny")
-            s = cv2.getTrackbarPos(switch, "canny")
+            lower = 55
+            upper = 55
+            s = 1
             BG_threshold = 800 / 1000  # cv2.getTrackbarPos('BG Threshold', 'canny')
 
             frame = self.segmentor.removeBG(
                 frame, (0, 255, 0), cutThreshold=BG_threshold
             )
 
-            # Ensure upper >= lower
-            if upper < lower:
-                upper = lower
-                cv2.setTrackbarPos("Upper", "canny", upper)
-
             if s == 0:
                 edges = frame
             else:
                 edges = cv2.Canny(frame, lower, upper)
 
-            cv2.imshow("canny", edges)
+            ###### Previewing the image!
+            if self.show_preview == 0:
+                cv2.destroyAllWindows()
+            elif self.show_preview == 1:
+                cv2.imshow('Computer Vision Preview',edges)
+            elif self.show_preview == 2:
+                cv2.imshow('Computer Vision Preview',frame)
 
             if True:  # press esc to stop
                 # cv2.imshow('canny',edges)
@@ -214,6 +210,6 @@ class CV:
                 print(f'Edge coordinates saved to {csv_filename}')
                 break
 
-        print(list(IMG))
+        print("stopped CV")
 
         cv2.destroyAllWindows()

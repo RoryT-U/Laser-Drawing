@@ -67,8 +67,6 @@ class Shapes:
         for i in range(POINTS):
             x = RES * math.sin(2 * math.pi * i / POINTS) + RES / 2
             y = RES * math.cos(2 * math.pi * i / POINTS) + RES / 2
-            if x > 255 or y > 255:
-                print(x, y, "shit")
             arr.extend([int(math.floor(x)), int(math.floor(y)), 0 if i % 2 else 255])
         arr.extend([13, 13, 13])
         return arr
@@ -83,7 +81,6 @@ class Shapes:
         cos = np.round(127 * np.cos((2 * np.pi * x) / POINTS) + 128)
 
         arr = []
-        count = 0
         for i in range(POINTS):
 
             arr.extend(

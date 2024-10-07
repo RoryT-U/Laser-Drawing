@@ -1,4 +1,6 @@
+from ast import List
 import time
+from jax import Array
 import serial
 from threading import Thread
 
@@ -6,15 +8,19 @@ from threading import Thread
 class PSoCBridge:
     serial_port: serial.Serial
     read_thread: Thread
+    datastream = []
 
     TERMINATOR = [13, 13, 13]
 
-    def __init__(self, ignoreCOM = False):
+    def __init__(self, **kwargs):
         """
         Initialises communication between PC and PSoC. Tries COM0 to COM6
         """
-        self.ignoreCOM = ignoreCOM
-        if ignoreCOM:
+        self.ignoreCOM = kwargs.get('ignoreCOM', False)
+        self.flipX = kwargs.get('flipX', False)
+        self.flipY = kwargs.get('flipY', False)
+
+        if self.ignoreCOM:
             return
 
         connected = False
@@ -69,9 +75,21 @@ class PSoCBridge:
         """
         Write bytes to the PSoC (also adds terminator)
         """
-        self.write_unterminated(data + self.TERMINATOR)
+        result = []
+        if self.flipX or self.flipY:
+            for i in range(0, len(data), 3):
+                x, y, color = data[i], data[i + 1], data[i + 2]
+                if self.flipX:
+                    x = 255 - x
+                if self.flipY:
+                    y = 255 - y
+                result.extend([x, y, color])
+        else:
+            result = data
 
-    def print(self, text):
+        self.write_unterminated(result + self.TERMINATOR)
+
+    def send_text(self, text):
         """
         Unused. Only sends characters to the PSoC for debugging
         """
@@ -83,11 +101,15 @@ class PSoCBridge:
         """
         if self.ignoreCOM:
             print(f"Ignoring COM: {len(data)} bytes")
+            self.datastream = data
             return
 
         data = bytearray(data)
         self.serial_port.write(data)
         print(f"sent {len(data)} bytes")
+
+    def get_data_stream(self):
+        return self.datastream
 
     def speed_test(self):
         """
