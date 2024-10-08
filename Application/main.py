@@ -7,12 +7,18 @@ import tkinter as tk
 from PSoCBridge import PSoCBridge
 from CVCam import CV
 from console import Console
+from flappy_bird import FlappyBird
 
 
 # TODO: change this to false if PSoC is connected.
 # If true, simulates the laser path with a GUI
 
-PSoC = PSoCBridge(ignoreCOM=True, flipX=True, flipY=True)
+FLIP_X, FLIP_Y = True, True
+
+try:
+    PSoC = PSoCBridge(ignoreCOM=False, flipX=FLIP_X, flipY=FLIP_Y)
+except Exception as e:
+    PSoC = PSoCBridge(ignoreCOM=True, flipX=FLIP_X, flipY=FLIP_Y)
 
 # Global variable to keep track of the currently active button (for modes)
 active_button = None
@@ -74,7 +80,7 @@ def image_mode_action():
     print("image pressed")
     console = Console(PSoC)
 
-    run_in_thread(console.test)
+    run_in_thread(console.startConsole)
 
 
 def runCV():
@@ -102,8 +108,10 @@ def camera_mode_action():
     thread.start()
 
 
-def presets_mode_action():
+def flappy_action():
     change_mode(presets_button)
+    fb = FlappyBird(PSoC)
+    run_in_thread(fb.start_flappy_bird)
 
 
 # Create the main window
@@ -257,7 +265,7 @@ camera_button = tk.Button(
 camera_button.grid(row=2, column=0, padx=5, pady=5)
 
 presets_button = tk.Button(
-    mode_frame, text="GAMES", command=presets_mode_action, width=15, height=4
+    mode_frame, text="GAMES", command=flappy_action, width=15, height=4
 )
 presets_button.grid(row=2, column=1, padx=5, pady=5)
 
@@ -362,24 +370,38 @@ canvas.pack(pady=10)
 
 
 # Function to draw a line between two points if the laser is on
-def draw_line(x1, y1, x2, y2):
+def draw_line(x1, y1, x2, y2, color):
     if x1 == x2 and y1 == y2:
         return  # Prevent drawing lines to the same point
-    canvas.create_line(x1, y1, x2, y2, fill="white")
+    canvas.create_line(x1, y1, x2, y2, fill=color)
 
 
 # Function to process the data stream and draw lines
 def draw_data(data_stream):
     canvas.delete("all")
+    data_stream = data_stream
     prev_x, prev_y = None, None
-    for i in range(
-        0, len(data_stream), 3
-    ):  # Iterate over the data stream in steps of 3
+    n =  max(0, len(data_stream))
+    if n % 3 != 0 or n == 0:
+        return
+
+    for i in range(0, n-3, 3):  
         xpos, ypos, color = data_stream[i], data_stream[i + 1], data_stream[i + 2]
-        if color == 255:  # Laser is on
-            if prev_x is not None and prev_y is not None:
-                draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2)
+
+        if prev_x is not None and prev_y is not None:
+            if color > 0:  # Laser is on
+                colorStr = "#"
+                colorStr += "ff" if ((color >> 6) & 0b11) > 0 else "00"
+                colorStr += "ff" if ((color >> 4) & 0b11) > 0 else "00"
+                colorStr += "ff" if ((color >> 2) & 0b11) > 0 else "00"
+            else:
+                colorStr = "#222222"
+
+            draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, colorStr)
         prev_x, prev_y = xpos, ypos
+
+    xpos, ypos, color = data_stream[0], data_stream[1], data_stream[2]
+    draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, "#222222")
 
 
 # Example data stream (continuous array)

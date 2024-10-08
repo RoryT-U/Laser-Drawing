@@ -1,6 +1,5 @@
 # pip install pyserial
 
-
 # note we only support 8 bits at the moment!
 
 import array
@@ -12,8 +11,10 @@ import csv
 import math
 import numpy as np
 
+colour = 255
+
 serialPort = serial.Serial(
-    port="COM4", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
+    port="COM7", baudrate=1500000, bytesize=serial.EIGHTBITS, timeout=0, stopbits=serial.STOPBITS_ONE,parity=serial.PARITY_NONE
 )
 
 def readCSV(filename):
@@ -44,7 +45,7 @@ def getBytesOfCSV(filename):
 
     output = []
     for i in range(len(xLst)):
-        output.extend([xLst[i], yLst[i], 255])
+        output.extend([xLst[i], yLst[i], i % 255])
 
     return bytearray(output + [13,13,13])
 
@@ -147,10 +148,10 @@ def square():
         arr.extend([255,i,255])
     arr.extend([255,255,255])
     for i in range(POINTS):
-        arr.extend([255-i,255,255])
+        arr.extend([255-i,255,i%255])
     arr.extend([0,255,255])
     for i in range(POINTS):
-        arr.extend([0,255-i,255])
+        arr.extend([0,255-i,i%255])
     arr.extend([0,0,255])
 
     arr.extend([13,13,13])
@@ -215,7 +216,7 @@ while 1:
     elif (userInput == "OFF"):
         serialPort.write(bytearray([0,0,0,13,13,13]))
     elif (userInput == "circle"):
-        serialPort.write(bytearray(circle()))
+        serialPort.write(bytearray(broken_cirle()))
     elif (userInput == "square"):
         serialPort.write(bytearray(square()))
     elif (userInput == "lines"):

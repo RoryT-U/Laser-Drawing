@@ -83,7 +83,6 @@ int main()
 
     VDAC8_X_Start();
     VDAC8_Y_Start();
-    VDAC8_R_Start();
 
     while (0u == USBUART_GetConfiguration())
     {
@@ -185,7 +184,9 @@ int main()
         {
             if (readBufferLen < 3)
             {
-                VDAC8_R_SetValue(0);
+                R_Out_Write(0);
+                G_Out_Write(0);
+                B_Out_Write(0);
                 continue; // not an image
             }
             if (readBufferItr >= readBufferLen)
@@ -193,13 +194,23 @@ int main()
                 readBufferItr = 0;
             }
 
-            VDAC8_X_SetValue(readBuffer[readBufferItr]);
-            VDAC8_Y_SetValue(readBuffer[readBufferItr + 1]);
-            VDAC8_R_SetValue(readBuffer[readBufferItr + 2]);
-
-            int delay = readBuffer[readBufferItr + 2] ? 30 : 150;
-            CyDelayUs(delay);
-
+            // get values
+            uint8 xPos = readBuffer[readBufferItr];
+            uint8 yPos = readBuffer[readBufferItr+1];
+            // for 2-bits per color = 64 colours
+            uint8 color = readBuffer[readBufferItr+2];
+            uint8 rValue = (color >> 6) & 0b11;
+            uint8 gValue = (color >> 4) & 0b11;
+            uint8 bValue = (color >> 2) & 0b11;
+            uint8 excess = color & 0b11;
+            VDAC8_X_SetValue(xPos);
+            VDAC8_Y_SetValue(yPos);
+            R_Out_Write(rValue);
+            G_Out_Write(gValue);
+            B_Out_Write(bValue);
+            
+            CyDelayUs(30);
+            
             readBufferItr = readBufferItr + 3;
         }
     }

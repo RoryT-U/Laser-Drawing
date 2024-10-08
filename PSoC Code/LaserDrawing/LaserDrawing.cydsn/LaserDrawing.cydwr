@@ -283,12 +283,14 @@
       <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="PIN_INPUT" />
       <Data key="32b25456-7399-44f1-a20f-e79ebcbff2dd" value="R_Out" />
       <Data key="45fb7381-7248-4090-ba96-74b31fca60a6" value="B_Out" />
+      <Data key="61c9a10d-9b66-4d52-9298-5e1c61facffd" value="B_Out" />
       <Data key="972eacd9-0a52-4c08-b2f1-f86a71e30a8c" value="Y_Out" />
       <Data key="77715107-f8d5-47e5-a629-0fb83101ac6b" value="X_Out" />
       <Data key="b469e93f-0eea-40f3-8d03-31859b0cb243" value="G_Out" />
       <Data key="beca5e2d-f70f-4900-a4db-7eca1ed3126e/8b77a6c4-10a0-4390-971c-672353e2a49c" value="USBUART_Dm" />
       <Data key="beca5e2d-f70f-4900-a4db-7eca1ed3126e/618a72fc-5ddd-4df5-958f-a3d55102db42" value="USBUART_Dp" />
-      <Data key="e851a3b9-efb8-48be-bbb8-b303b216c393" value="Pin_1" />
+      <Data key="e851a3b9-efb8-48be-bbb8-b303b216c393" value="R_Out" />
+      <Data key="e804599a-0d08-4741-bdd8-32ff65985977" value="G_Out" />
       <Data key="ee820623-fb90-419e-83fd-d495e5fddac3" value="Pin_2" />
     </Group>
   </Group>
@@ -3391,6 +3393,11 @@
         <Data key="Port Format" value="0,7" />
       </Group>
     </Group>
+    <Group key="61c9a10d-9b66-4d52-9298-5e1c61facffd">
+      <Group key="0">
+        <Data key="Port Format" value="0,2" />
+      </Group>
+    </Group>
     <Group key="972eacd9-0a52-4c08-b2f1-f86a71e30a8c">
       <Group key="0">
         <Data key="Port Format" value="0,6" />
@@ -3403,7 +3410,12 @@
     </Group>
     <Group key="e851a3b9-efb8-48be-bbb8-b303b216c393">
       <Group key="0">
-        <Data key="Port Format" value="2,1" />
+        <Data key="Port Format" value="0,7" />
+      </Group>
+    </Group>
+    <Group key="e804599a-0d08-4741-bdd8-32ff65985977">
+      <Group key="0">
+        <Data key="Port Format" value="0,1" />
       </Group>
     </Group>
     <Group key="ee820623-fb90-419e-83fd-d495e5fddac3">
@@ -3411,6 +3423,7 @@
         <Data key="Port Format" value="2,2" />
       </Group>
     </Group>
+    <Group key="UnAssigned Pins" />
   </Group>
   <Group key="PlaceDir">
     <Data key="count" value="0" />

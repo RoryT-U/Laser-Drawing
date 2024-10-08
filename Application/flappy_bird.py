@@ -6,8 +6,18 @@ import serial
 import time
 from threading import Thread
 import random
+from PSoCBridge import PSoCBridge
+import Utils
 
-import shapes;
+from Utils import Shapes;
+
+WALL_COLOUR = PSoCBridge.C_RED
+BIRD_COLOUR = PSoCBridge.C_GREEN
+PIPE_COLOUR = PSoCBridge.C_BLUE
+
+LASER_ON_DELAY = 10         # Point delay before turning the laser back on
+LASER_OFF_DELAY = 5         # Point delay before turning the laser off
+DRAW_WALLS = True
 
 class FlappyBird:
     def __init__(self, PSoC):
@@ -19,7 +29,7 @@ class FlappyBird:
 
         # Set up display
         width, height = 255, 255
-        screen = pygame.display.set_mode((width, height))
+        #screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Flappy Bird")
 
         # Set up clock
@@ -64,7 +74,7 @@ class FlappyBird:
         # Create initial pipes
         pipe_list.append(create_pipe())
 
-        while running:
+        while running and not game_over:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -105,33 +115,33 @@ class FlappyBird:
         
             # Actual coordinates to draw
             to_send = []
-            add_bird_coords(to_send, bird_x, bird_y, bird_radius, 50, 255)
+            self.add_bird_coords(to_send, bird_x, bird_y, bird_radius, 50, BIRD_COLOUR)
             
             for pipe in pipe_list:
-                add_pipe_coords(to_send, pipe[0], 255)
-                add_pipe_coords(to_send, pipe[1], 255)
+                self.add_pipe_coords(to_send, pipe[0], PIPE_COLOUR)
+                self.add_pipe_coords(to_send, pipe[1], PIPE_COLOUR)
 
 
             if DRAW_WALLS:
                 # Bottom Wall
                 for _ in range(0, LASER_ON_DELAY):
-                    add_coord(to_send, 255, 255, 0)
+                    self.add_coord(to_send, 255, 255, 0)
 
                 for i in range(255, -1, -5):
-                    add_coord(to_send, i, 255, 255)
+                    self.add_coord(to_send, i, 255, WALL_COLOUR)
 
                 for _ in range(0, LASER_OFF_DELAY):
-                    add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                    self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
 
                 # Top Wall
                 for _ in range(0, LASER_ON_DELAY):
-                    add_coord(to_send, 0, 0, 0)
+                    self.add_coord(to_send, 0, 0, 0)
 
                 for i in range(0, 256, 5):
-                    add_coord(to_send, i, 0, 255)
+                    self.add_coord(to_send, i, 0, WALL_COLOUR)
 
                 for _ in range(0, LASER_OFF_DELAY):
-                    add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                    self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
 
 
             to_send.extend([13,13,13])
@@ -139,51 +149,51 @@ class FlappyBird:
             self.PSoC.write(bytearray(list(to_send)))
 
 
-            # Clear the screen
-            screen.fill(black)
+            # # Clear the screen
+            # screen.fill(black)
 
-            # Draw bird
-            pygame.draw.circle(screen, yellow, (bird_x, bird_y), bird_radius)
+            # # Draw bird
+            # pygame.draw.circle(screen, yellow, (bird_x, bird_y), bird_radius)
 
-            # Draw pipes
-            for pipe in pipe_list:
-                pygame.draw.rect(screen, green, pipe[0])
-                pygame.draw.rect(screen, green, pipe[1])
+            # # Draw pipes
+            # for pipe in pipe_list:
+            #     pygame.draw.rect(screen, green, pipe[0])
+            #     pygame.draw.rect(screen, green, pipe[1])
 
-            # Draw score
-            score_text = font.render(str(score), True, white)
-            screen.blit(score_text, (width // 2 - score_text.get_width() // 2, 20))
+            # # Draw score
+            # score_text = font.render(str(score), True, white)
+            # screen.blit(score_text, (width // 2 - score_text.get_width() // 2, 20))
 
-            # Check game over
-            if game_over:
-                game_over_text = game_over_font.render("Game Over", True, white)
-                screen.blit(game_over_text, (width // 2 - game_over_text.get_width() // 2, height // 2 - game_over_text.get_height() // 2))
+            # # Check game over
+            # if game_over:
+            #     game_over_text = game_over_font.render("Game Over", True, white)
+            #     screen.blit(game_over_text, (width // 2 - game_over_text.get_width() // 2, height // 2 - game_over_text.get_height() // 2))
+
 
             # Update display
-            pygame.display.flip()
+            # pygame.display.flip()
 
             # Frame rate
             clock.tick(tick_rate)
 
         pygame.quit()
 
-
-    def add_pipe_coords(coords:list[int], pipe:pygame.Rect, colour):
+    def add_pipe_coords(self, coords:list[int], pipe:pygame.Rect, colour):
         x_left, y_top = pipe.topleft
 
-        points = shapes.rectangle_points(x_left, y_top, pipe.width, pipe.height, 3, 3, 40)
+        points = Utils.Shapes.rectangle_points(x_left, y_top, pipe.width, pipe.height, 3, 3, 40)
 
         for _ in range(0, LASER_ON_DELAY):
-            add_coord(coords, points[0][0], points[0][1], colour)
+            self.add_coord(coords, points[0][0], points[0][1], colour)
 
         for point in points:
-            add_coord(coords, point[0], point[1], colour)
+            self.add_coord(coords, point[0], point[1], colour)
         
         for _ in range(0, LASER_OFF_DELAY):
-            add_coord(coords, points[-1][0], points[-1][1], colour)
+            self.add_coord(coords, points[-1][0], points[-1][1], colour)
         
 
-    def add_bird_coords(coords:list, x_center, y_center, radius, num_points, colour):
+    def add_bird_coords(self, coords:list, x_center, y_center, radius, num_points, colour):
         # Generate angles evenly spaced around the circle
         angles = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
 
@@ -200,16 +210,17 @@ class FlappyBird:
 
                 if (first):
                     for _ in range(0, LASER_ON_DELAY):
-                        add_coord(coords, x, y, 0)
+                        self.add_coord(coords, x, y, 0)
                     first_x = x
                     first_y = y
                     first = False
                     
-                add_coord(coords, x, y, colour)
+                self.add_coord(coords, x, y, colour)
 
         for _ in range(0, LASER_OFF_DELAY):
-            add_coord(coords, first_x, first_y, colour)
+            self.add_coord(coords, first_x, first_y, colour)
 
+    @staticmethod
     def add_coord(coords:list, x, y, colour):
 
         if (y > 255):
@@ -231,8 +242,3 @@ class FlappyBird:
         coords.append(int(255-y))   
         coords.append(colour)
 
-    readThread.start()
-
-    LASER_ON_DELAY = 10         # Point delay before turning the laser back on
-    LASER_OFF_DELAY = 5         # Point delay before turning the laser off
-    DRAW_WALLS = True

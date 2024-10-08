@@ -15,6 +15,8 @@ class CV:
         self.camera = camera
         self.PSoC = PSoC
         self.cap = cv2.VideoCapture(camera)
+        self.lower = 50
+        self.upper = 70
         print(f"running CV with camera {camera}")
 
     @staticmethod
@@ -169,7 +171,6 @@ class CV:
                 #     print(point)
                 #     output.extend(bytearray(point))
 
-                # output.extend(bytearray([13,13,13]))
                 # serialPort.write(output)
 
                 output = []
@@ -185,7 +186,6 @@ class CV:
                     # print(point)
                     output.extend(point)
 
-                output.extend([13, 13, 13])
                 self.PSoC.write(output)
                 # print(bytearray(output))
 

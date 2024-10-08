@@ -9,12 +9,20 @@ class PSoCBridge:
     serial_port: serial.Serial
     read_thread: Thread
     datastream = []
+    C_RED = 192
+    C_GREEN = 48
+    C_BLUE = 12
+    C_ALL = 255
+    C_OFF = 0
 
     TERMINATOR = [13, 13, 13]
 
+    def colour(self, red, green, blue):
+        return self.C_RED*red + self.C_GREEN*green + self.C_BLUE*blue
+
     def __init__(self, **kwargs):
         """
-        Initialises communication between PC and PSoC. Tries COM0 to COM6
+        Initialises communication between PC and PSoC. Tries COM0 to COM9
         """
         self.ignoreCOM = kwargs.get('ignoreCOM', False)
         self.flipX = kwargs.get('flipX', False)
@@ -24,8 +32,9 @@ class PSoCBridge:
             return
 
         connected = False
-        for i in range(7):
+        for i in range(10):
             try:
+                print("trying ",i)
                 self.connect(f"COM{i}")
                 connected = True
                 break
@@ -33,7 +42,8 @@ class PSoCBridge:
                 continue
 
         if not connected:
-            raise FileNotFoundError("Could not find an open COM port. Check cable and re-run the program!")
+            self.ignoreCOM = True
+            raise print("Could not find an open COM port. Check cable and re-run the program!")
 
     def connect(self, comPort):
         """
@@ -87,6 +97,9 @@ class PSoCBridge:
         else:
             result = data
 
+
+        print(result[-6:])
+
         self.write_unterminated(result + self.TERMINATOR)
 
     def send_text(self, text):
@@ -99,9 +112,9 @@ class PSoCBridge:
         """
         Writes bytes to PSoC (unterminated)
         """
+        self.datastream = data
         if self.ignoreCOM:
-            print(f"Ignoring COM: {len(data)} bytes")
-            self.datastream = data
+            print(f"COM not connected: {len(data)} bytes")
             return
 
         data = bytearray(data)
