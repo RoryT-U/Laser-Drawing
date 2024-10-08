@@ -11,8 +11,8 @@ class Console:
             data = CSVReader.getBytesOfAxisCSV(filename)
             self.PSoC.write(data)
             time.sleep(3)
-        except:
-            print("cannot connect to console, or file not found")
+        except Exception as e:
+            print("cannot connect to console, or file not found", e)
 
     def test(self):
         self.transmit("atom-500")

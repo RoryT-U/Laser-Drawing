@@ -162,7 +162,7 @@ def flip_output_cycle():
         flip_output_state = 2
         PSoC.flipX, PSoC.flipY = False, True
     elif flip_output_state == 2:
-        flip_output_button.config(text="FLIPPED BOTH", bg="green", relief=tk.GROOVE)
+        flip_output_button.config(text="FLIPPED X & Y", bg="green", relief=tk.GROOVE)
         flip_output_state = 3
         PSoC.flipX, PSoC.flipY = True, True
     elif flip_output_state == 3:
