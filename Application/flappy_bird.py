@@ -36,12 +36,6 @@ class FlappyBird:
         clock = pygame.time.Clock()
         tick_rate = 15
 
-        # Colors
-        white = (255, 255, 255)
-        black = (0, 0, 0)
-        green = (0, 255, 0)
-        yellow = (255, 255, 0)
-
         # Game variables
         bird_x, bird_y = 30, height // 2
         bird_radius = 10
@@ -57,8 +51,6 @@ class FlappyBird:
         pipe_tick = 0
 
         score = 0
-        font = pygame.font.Font(None, 74)
-        game_over_font = pygame.font.Font(None, 50)
 
         # Function to create new pipes
         def create_pipe():
@@ -143,8 +135,6 @@ class FlappyBird:
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
 
-
-            to_send.extend([13,13,13])
             print(len(to_send))
             self.PSoC.write(bytearray(list(to_send)))
 

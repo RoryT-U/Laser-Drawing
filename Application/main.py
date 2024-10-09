@@ -4,6 +4,7 @@ import threading
 import time
 import tkinter as tk
 
+from pong6 import Pong
 from PSoCBridge import PSoCBridge
 from CVCam import CV
 from console import Console
@@ -112,6 +113,12 @@ def flappy_action():
     change_mode(presets_button)
     fb = FlappyBird(PSoC)
     run_in_thread(fb.start_flappy_bird)
+
+def pong_action():
+    change_mode(presets_button)
+    fb = Pong(PSoC)
+    PSoC.flipX = True
+    run_in_thread(fb.start_pong_game)
 
 
 # Create the main window
@@ -265,7 +272,7 @@ camera_button = tk.Button(
 camera_button.grid(row=2, column=0, padx=5, pady=5)
 
 presets_button = tk.Button(
-    mode_frame, text="GAMES", command=flappy_action, width=15, height=4
+    mode_frame, text="GAMES", command=pong_action, width=15, height=4
 )
 presets_button.grid(row=2, column=1, padx=5, pady=5)
 
