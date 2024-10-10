@@ -2,7 +2,6 @@
 
 # note we only support 8 bits at the moment!
 
-import array
 import serial
 import time
 from threading import Thread

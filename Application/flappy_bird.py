@@ -11,13 +11,18 @@ import Utils
 
 from Utils import Shapes;
 
-WALL_COLOUR = PSoCBridge.C_RED
-BIRD_COLOUR = PSoCBridge.C_GREEN
-PIPE_COLOUR = PSoCBridge.C_BLUE
+white = (255, 255, 255)
+black = (0, 0, 0)
+green = (0, 255, 0)
+yellow = (255, 255, 0)
 
-LASER_ON_DELAY = 10         # Point delay before turning the laser back on
-LASER_OFF_DELAY = 5         # Point delay before turning the laser off
-DRAW_WALLS = True
+WALL_COLOUR = PSoCBridge.C_GREEN
+BIRD_COLOUR = PSoCBridge.C_GREEN
+PIPE_COLOUR = PSoCBridge.C_GREEN
+
+LASER_ON_DELAY = 15         # Point delay before turning the laser back on
+LASER_OFF_DELAY = 5        # Point delay before turning the laser off
+DRAW_WALLS = False
 
 class FlappyBird:
     def __init__(self, PSoC):
@@ -29,7 +34,7 @@ class FlappyBird:
 
         # Set up display
         width, height = 255, 255
-        #screen = pygame.display.set_mode((width, height))
+        screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Flappy Bird")
 
         # Set up clock
@@ -139,29 +144,20 @@ class FlappyBird:
             self.PSoC.write(bytearray(list(to_send)))
 
 
-            # # Clear the screen
-            # screen.fill(black)
+            # Clear the screen
+            screen.fill(black)
 
-            # # Draw bird
-            # pygame.draw.circle(screen, yellow, (bird_x, bird_y), bird_radius)
+            # Draw bird
+            pygame.draw.circle(screen, yellow, (bird_x, bird_y), bird_radius)
 
-            # # Draw pipes
-            # for pipe in pipe_list:
-            #     pygame.draw.rect(screen, green, pipe[0])
-            #     pygame.draw.rect(screen, green, pipe[1])
-
-            # # Draw score
-            # score_text = font.render(str(score), True, white)
-            # screen.blit(score_text, (width // 2 - score_text.get_width() // 2, 20))
-
-            # # Check game over
-            # if game_over:
-            #     game_over_text = game_over_font.render("Game Over", True, white)
-            #     screen.blit(game_over_text, (width // 2 - game_over_text.get_width() // 2, height // 2 - game_over_text.get_height() // 2))
+            # Draw pipes
+            for pipe in pipe_list:
+                pygame.draw.rect(screen, green, pipe[0])
+                pygame.draw.rect(screen, green, pipe[1])
 
 
             # Update display
-            # pygame.display.flip()
+            pygame.display.flip()
 
             # Frame rate
             clock.tick(tick_rate)

@@ -25,16 +25,16 @@ class Console:
         self.transmit("mike-1000")
 
     def startConsole(self):
-        while 1:
+        while self.PSoC.running:
             userInput = input()
             if userInput == "speed":
                 self.PSoC.speed_test()
             elif userInput == "test":
                 self.test()
             elif userInput == "ON" or userInput == "on":
-                self.PSoC.write([13, 13, 255] + self.PSoC.TERMINATOR)
+                self.PSoC.write([13, 13, 255])
             elif userInput == "OFF" or userInput == "off":
-                self.PSoC.write([0, 0, 0] + self.PSoC.TERMINATOR)
+                self.PSoC.write([0, 0, 0])
             elif userInput == "circle":
                 self.PSoC.write(Shapes.circle())
             elif userInput == "bcircle":
@@ -44,13 +44,15 @@ class Console:
             elif userInput == "lines":
                 self.PSoC.write(Shapes.lines())
             elif userInput == "pause":
-                self.PSoC.write([0] + self.PSoC.TERMINATOR)
+                self.PSoC.write([0,0,0])
             elif userInput[:5] == "send ":
                 print(userInput[5:])
                 self.transmit(userInput[5:])
             elif userInput[:5] == "byte ":
+                self.PSoC.flipX = False 
+                self.PSoC.flipY = False
                 arr = list(map(int, userInput[5:].split()))
-                bytes = arr + [self.PSoC.TERMINATOR]
+                bytes = arr
                 self.PSoC.write(bytes)
             elif userInput[:5] == "text ":
                 print("Note: non-terminated data intended for debugging. Flush UART.")

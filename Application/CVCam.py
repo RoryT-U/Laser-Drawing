@@ -11,12 +11,13 @@ class CV:
     running = True
     show_preview = 0
 
-    def __init__(self, PSoC: PSoCBridge, camera: int) -> None:
+    def __init__(self, PSoC: PSoCBridge, camera: int, **kwargs) -> None:
+        self.lower = kwargs.get('lower', 60)
+        self.upper = kwargs.get('upper', 80)
+        self.bg_threshold = kwargs.get('bg_threshold', 0.5)
         self.camera = camera
         self.PSoC = PSoC
         self.cap = cv2.VideoCapture(camera)
-        self.lower = 50
-        self.upper = 70
         print(f"running CV with camera {camera}")
 
     @staticmethod
@@ -43,19 +44,18 @@ class CV:
                 print("Error: Failed to capture image")
                 break
 
-            lower = 55
-            upper = 55
-            s = 1
-            BG_threshold = 800 / 1000  # cv2.getTrackbarPos('BG Threshold', 'canny')
+            lower = 230
+            upper = 255
+            if self.upper > self.lower:
+                lower = self.lower
+                upper = self.upper
+            BG_threshold = self.bg_threshold  # cv2.getTrackbarPos('BG Threshold', 'canny')
 
             frame = self.segmentor.removeBG(
                 frame, (0, 255, 0), cutThreshold=BG_threshold
             )
 
-            if s == 0:
-                edges = frame
-            else:
-                edges = cv2.Canny(frame, lower, upper)
+            edges = cv2.Canny(frame, lower, upper)
 
             ###### Previewing the image!
             if self.show_preview == 0:
@@ -73,7 +73,7 @@ class CV:
                 if len(points) < 2:
                     continue
 
-                keep_ratio = 1000 / len(points)
+                keep_ratio = 1100 / len(points)
 
                 # Randomly select a subset of points based on the keep_ratio
                 total_points = len(points)
@@ -140,7 +140,7 @@ class CV:
 
                     # Mark the next point as visited
                     visited[next_index] = True
-                    LED = 255
+                    LED = PSoCBridge.C_GREEN
                     if dist > 10:
                         LED = 0
                         for _ in range(2):
@@ -182,7 +182,7 @@ class CV:
                         X = 255 - int(path[i][1])
                         Y = 255 - int(path[i][0])
 
-                    point = [X, Y, int(path[i][2])]
+                    point = [X, Y, 48]
                     # print(point)
                     output.extend(point)
 

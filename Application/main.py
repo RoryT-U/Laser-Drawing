@@ -15,11 +15,12 @@ from flappy_bird import FlappyBird
 # If true, simulates the laser path with a GUI
 
 FLIP_X, FLIP_Y = True, True
+SWAP_XY = True
 
 try:
-    PSoC = PSoCBridge(ignoreCOM=False, flipX=FLIP_X, flipY=FLIP_Y)
+    PSoC = PSoCBridge(ignoreCOM=False, flipX=FLIP_X, flipY=FLIP_Y, swapXY=SWAP_XY)
 except Exception as e:
-    PSoC = PSoCBridge(ignoreCOM=True, flipX=FLIP_X, flipY=FLIP_Y)
+    PSoC = PSoCBridge(ignoreCOM=True, flipX=FLIP_X, flipY=FLIP_Y, swapaXY=SWAP_XY)
 
 # Global variable to keep track of the currently active button (for modes)
 active_button = None
@@ -54,10 +55,12 @@ def change_mode(button):
         running_CV.stop()
 
 
+
 # Function placeholders for other button actions
 def shutdown_action():
     change_mode(shutdown_button)
     if running_CV is not None: running_CV.stop()
+    PSoC.running = False
     root.destroy()
     sys.exit()
 
@@ -81,7 +84,7 @@ def image_mode_action():
     print("image pressed")
     console = Console(PSoC)
 
-    run_in_thread(console.startConsole)
+    run_in_thread(console.test)
 
 
 def runCV():
@@ -92,7 +95,7 @@ def runCV():
 
     try:
         running_CV.runCV()
-    except Exception as e:
+    except Exception as e:  
         write_error(e)
 
 
@@ -115,7 +118,7 @@ def flappy_action():
     run_in_thread(fb.start_flappy_bird)
 
 def pong_action():
-    change_mode(presets_button)
+    change_mode(pong_button)
     fb = Pong(PSoC)
     PSoC.flipX = True
     run_in_thread(fb.start_pong_game)
@@ -197,6 +200,27 @@ flip_output_button = tk.Button(
 )
 flip_output_button.pack(side="left", padx= 10, pady=10)
 
+# SWAP XY FUNCTION
+def swap_xy_action():
+    if swap_output_button["text"] == "SWAP XY: OFF":
+        swap_output_button.config(text="SWAP XY: ON", bg="green", relief=tk.SUNKEN)
+        PSoC.swapXY = True
+    else:
+        swap_output_button.config(text="SWAP XY: OFF", bg="red", relief=tk.RAISED)
+        PSoC.swapXY = False
+
+# SWAP XY OUTPUT BUTTON
+swap_output_button = tk.Button(
+    top_frame,
+    text="SWAP XY",
+    command=swap_xy_action,
+    width=20,
+    height=2,
+    bg="orange",
+    relief=tk.RAISED,
+)
+swap_output_button.pack(side="left", padx= 10, pady=10)
+
 # SHUTDOWN button
 shutdown_button = tk.Button(
     top_frame,
@@ -272,18 +296,42 @@ camera_button = tk.Button(
 camera_button.grid(row=2, column=0, padx=5, pady=5)
 
 presets_button = tk.Button(
-    mode_frame, text="GAMES", command=pong_action, width=15, height=4
+    mode_frame, text="FLAPPY BIRD", command=flappy_action, width=15, height=4
 )
 presets_button.grid(row=2, column=1, padx=5, pady=5)
+pong_button = tk.Button(
+    mode_frame, text="PONG", command=pong_action, width=15, height=4
+)
+pong_button.grid(row=3, column=1, padx=5, pady=5)
 
 # Mode settings frame
-mode_settings_frame = tk.Frame(left_frame, width=340, height=300, relief="solid", bd=1)
+mode_settings_frame = tk.Frame(left_frame, width=400, height=300, relief="solid", bd=1)
 mode_settings_frame.pack(pady=10)
 
 mode_settings_label = tk.Label(
-    mode_settings_frame, text="MODE SETTINGS", font=("Arial", 18)
+    mode_settings_frame, text="CV SETTINGS", font=("Arial", 18)
 )
 mode_settings_label.pack(expand=True)
+
+def upper_slider_changed(value):
+    print("upper value:", value)
+    if running_CV: running_CV.upper = int(value)
+def lower_slider_changed(value):
+    print("lower value:", value)
+    if running_CV: running_CV.lower = int(value)
+def bg_slider_changed(value):
+    print("BG value:", value)
+    if running_CV: running_CV.bg_threshold = int(value/100)
+
+upper_slider = tk.Scale(mode_settings_frame, from_=0, to=255, orient="horizontal",
+                  label="Upper", length=200, command=upper_slider_changed)
+upper_slider.pack()
+lower_slider = tk.Scale(mode_settings_frame, from_=0, to=255, orient="horizontal",
+                  label="Lower (must be less than Upper)", length=200, command=lower_slider_changed)
+lower_slider.pack()
+bg_slider = tk.Scale(mode_settings_frame, from_=0, to=100, orient="horizontal",
+                  label="BG threshold", length=200, command=lower_slider_changed)
+bg_slider.pack()
 
 # General settings frame
 general_settings_frame = tk.Frame(
@@ -407,8 +455,9 @@ def draw_data(data_stream):
             draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, colorStr)
         prev_x, prev_y = xpos, ypos
 
-    xpos, ypos, color = data_stream[0], data_stream[1], data_stream[2]
-    draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, "#222222")
+    if prev_x is not None and prev_y is not None:
+        xpos, ypos, color = data_stream[0], data_stream[1], data_stream[2]
+        draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, "#222222")
 
 
 # Example data stream (continuous array)

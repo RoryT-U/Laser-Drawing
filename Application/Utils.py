@@ -3,7 +3,6 @@
 import csv
 import math
 import numpy as np
-
 SWAP_XY = False
 FLIP_X = True
 FLIP_Y = True
@@ -49,7 +48,7 @@ class CSVReader:
 
         output = []
         for i in range(len(xLst)):
-            output.extend([xLst[i], yLst[i], i % 255])
+            output.extend([xLst[i], yLst[i], 48])
 
         return output
 
@@ -111,8 +110,8 @@ class Shapes:
             arr.extend([0, 255 - i, 255])
         arr.extend([0, 0, 255])
 
-        print(arr)
-        return arr
+        print(arr + [13,13,13])
+        return arr + [13,13,13]
 
     @staticmethod
     def lines():

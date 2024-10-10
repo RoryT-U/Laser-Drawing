@@ -27,6 +27,8 @@ class PSoCBridge:
         self.ignoreCOM = kwargs.get('ignoreCOM', False)
         self.flipX = kwargs.get('flipX', False)
         self.flipY = kwargs.get('flipY', False)
+        self.swapXY = kwargs.get('swapXY', False)
+        self.running = True
 
         if self.ignoreCOM:
             return
@@ -85,22 +87,26 @@ class PSoCBridge:
         """
         Write bytes to the PSoC (also adds terminator)
         """
+        if len(data) % 3 != 0:
+            print(len(data), "is not a multiple of 3!")
         result = []
-        if self.flipX or self.flipY:
-            for i in range(0, len(data), 3):
+        x, y, color = 0, 0, 0
+        for i in range(0, len(data), 3):
+            if self.swapXY:
                 x, y, color = data[i], data[i + 1], data[i + 2]
-                if self.flipX:
-                    x = 255 - x
-                if self.flipY:
-                    y = 255 - y
-                result.extend([x, y, color])
-        else:
-            result = data
+            else:
+                x, y, color = data[i + 1], data[i], data[i + 2]
+            if self.flipX:
+                x = 255 - x
+            if self.flipY:
+                y = 255 - y
+            result.extend([x, y, color])
 
-
-        print(result[-6:])
-
-        self.write_unterminated(result + self.TERMINATOR)
+        if len(data) % 64 > 61:
+            result.extend([data[-3], data[-2], data[-1]])  
+        result.extend(self.TERMINATOR)
+        self.write_unterminated(result)
+        print(result[-9:])
 
     def send_text(self, text):
         """

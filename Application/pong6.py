@@ -17,14 +17,14 @@ LASER_ON_DELAY = 7        # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5         # Point delay before turning the laser off
 DRAW_WALLS = True
 
-PADDLE_1_COLOUR = PSoCBridge.C_BLUE
+PADDLE_1_COLOUR = PSoCBridge.C_GREEN
 PADDLE_2_COLOUR = PSoCBridge.C_GREEN
-BALL_WALL_COLOUR = PSoCBridge.C_RED
+BALL_WALL_COLOUR = PSoCBridge.C_GREEN
 
 
-LASER_ON_DELAY = 10         # Point delay before turning the laser back on
-LASER_OFF_DELAY = 5         # Point delay before turning the laser off
-DRAW_WALLS = True
+LASER_ON_DELAY = 10        # Point delay before turning the laser back on
+LASER_OFF_DELAY = 6         # Point delay before turning the laser off
+DRAW_WALLS = False
 
 class Pong:
     def __init__(self, PSoC):
@@ -162,7 +162,7 @@ class Pong:
 
                 # Top Wall
                 for _ in range(0, LASER_ON_DELAY+1):
-                    self.add_coord(to_send, 0, 0, 0)
+                    self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
                 for i in range(0, 256, 5):
                     self.add_coord(to_send, i, 0, BALL_WALL_COLOUR)
@@ -170,12 +170,12 @@ class Pong:
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
 
-            print(len(to_send))
-            self.PSoC.write(bytearray(list(to_send)))
+            #print(len(to_send))
+            self.PSoC.write((to_send))
 
     
             # Frame rate
-            pygame.time.Clock().tick(30)
+            pygame.time.Clock().tick(20)
 
         # Quit pygame
         pygame.quit()
