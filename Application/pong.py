@@ -29,6 +29,10 @@ DRAW_WALLS = False
 class Pong:
     def __init__(self, PSoC):
         self.PSoC = PSoC
+        self.running = True
+
+    def stop(self):
+        self.running = False
 
     def start_pong_game(self):
         # Initialize pygame
@@ -39,7 +43,7 @@ class Pong:
 
         # Ball settings
         INITIAL_BALL_VELOCITY_Y = 0.1
-        default_ball_speed = 2
+        default_ball_speed = 2.2
         ball_radius = 5
         ball_velocity_x = default_ball_speed * random.choice((1, -1))
         ball_velocity_y = INITIAL_BALL_VELOCITY_Y
@@ -47,7 +51,7 @@ class Pong:
 
         # Paddle settings
         paddle_width, paddle_height = 10, 50
-        paddle_velocity = 8
+        paddle_velocity = 7
         player_one_x, player_one_y = 5, height // 2 - paddle_height // 2
         player_two_x, player_two_y = width - 5 - paddle_width, height // 2 - paddle_height // 2
 
@@ -55,14 +59,8 @@ class Pong:
         player_score, opponent_score = 0, 0
 
         # Main game loop
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
+        while self.running:
             # Movement keys
-            keys = pygame.key.get_pressed()
             if keyboard.is_pressed('s') and player_one_y > 0:
                 player_one_y -= paddle_velocity
 

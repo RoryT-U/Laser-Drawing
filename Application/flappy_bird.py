@@ -1,3 +1,4 @@
+import keyboard
 import pygame
 import random
 import numpy as np
@@ -24,9 +25,14 @@ LASER_ON_DELAY = 15         # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5        # Point delay before turning the laser off
 DRAW_WALLS = False
 
-class FlappyBird:
+class FlappyBird():
+    
     def __init__(self, PSoC):
         self.PSoC = PSoC
+        self.running = True
+
+    def stop(self):
+        self.running = False
     
     def start_flappy_bird(self):
         # Initialize pygame
@@ -34,8 +40,6 @@ class FlappyBird:
 
         # Set up display
         width, height = 255, 255
-        screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Flappy Bird")
 
         # Set up clock
         clock = pygame.time.Clock()
@@ -65,19 +69,24 @@ class FlappyBird:
             return top_pipe, bottom_pipe
 
         # Main game loop
-        running = True
         game_over = False
 
         # Create initial pipes
         pipe_list.append(create_pipe())
 
-        while running and not game_over:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN and not game_over:
-                    if event.key == pygame.K_SPACE:
-                        bird_speed_y = jump_strength
+        while self.running:
+
+
+            if keyboard.is_pressed('space') and not game_over:
+                bird_speed_y = jump_strength
+            if keyboard.is_pressed('space') and game_over:
+                pipe_list = []
+                pipe_spawn_rate = tick_rate * 3  
+                pipe_tick = 0
+                bird_y = height // 2
+                game_over = False
+                score = 0
+                pipe_list.append(create_pipe())
 
             if not game_over:
                 # Bird movement
@@ -143,26 +152,8 @@ class FlappyBird:
             print(len(to_send))
             self.PSoC.write(bytearray(list(to_send)))
 
-
-            # Clear the screen
-            screen.fill(black)
-
-            # Draw bird
-            pygame.draw.circle(screen, yellow, (bird_x, bird_y), bird_radius)
-
-            # Draw pipes
-            for pipe in pipe_list:
-                pygame.draw.rect(screen, green, pipe[0])
-                pygame.draw.rect(screen, green, pipe[1])
-
-
-            # Update display
-            pygame.display.flip()
-
             # Frame rate
             clock.tick(tick_rate)
-
-        pygame.quit()
 
     def add_pipe_coords(self, coords:list[int], pipe:pygame.Rect, colour):
         x_left, y_top = pipe.topleft

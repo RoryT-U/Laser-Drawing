@@ -4,7 +4,7 @@ import threading
 import time
 import tkinter as tk
 
-from pong6 import Pong
+from pong import Pong
 from PSoCBridge import PSoCBridge
 from CVCam import CV
 from console import Console
@@ -27,6 +27,8 @@ active_button = None
 preview_drawing = True
 camera: int = 0
 running_CV = None
+running_pong = None
+running_flappy_bird = None
 featureThread: threading.Thread
 
 
@@ -53,6 +55,15 @@ def change_mode(button):
     global running_CV
     if running_CV and active_button != camera_button:
         running_CV.stop()
+
+    global running_pong
+    if running_pong and active_button != pong_button:
+        running_pong.stop()
+
+    global running_flappy_bird
+    if running_flappy_bird and active_button != flappy_bird_button:
+        running_flappy_bird.stop()
+    
 
 
 
@@ -113,15 +124,23 @@ def camera_mode_action():
 
 
 def flappy_action():
-    change_mode(presets_button)
-    fb = FlappyBird(PSoC)
-    run_in_thread(fb.start_flappy_bird)
+    global running_flappy_bird
+    if running_flappy_bird is not None:
+        running_flappy_bird.stop()
+
+    change_mode(flappy_bird_button)
+    running_flappy_bird = FlappyBird(PSoC)
+    run_in_thread(running_flappy_bird.start_flappy_bird)
 
 def pong_action():
+    global running_pong
+    if running_pong is not None:
+        running_pong.stop()
+
     change_mode(pong_button)
-    fb = Pong(PSoC)
+    running_pong = Pong(PSoC)
     PSoC.flipX = True
-    run_in_thread(fb.start_pong_game)
+    run_in_thread(running_pong.start_pong_game)
 
 
 # Create the main window
@@ -231,7 +250,7 @@ shutdown_button = tk.Button(
     background="red",
     foreground="white",
 )
-#shutdown_button.pack(side="right", padx=10, pady=10)
+shutdown_button.pack(side="right", padx=10, pady=10)
 
 # SETTINGS button
 settings_button = tk.Button(
@@ -281,12 +300,12 @@ frame.grid(row=3, column=0, padx=5, pady=5)
 
 # Buttons for modes
 draw_button = tk.Button(
-    mode_frame, text="DRAW", command=draw_mode_action, width=15, height=4
+    mode_frame, text="RESET", command=draw_mode_action, width=15, height=4
 )
 draw_button.grid(row=1, column=0, padx=5, pady=5)
 
 image_button = tk.Button(
-    mode_frame, text="TESTS", command=image_mode_action, width=15, height=4
+    mode_frame, text="PRESETS", command=image_mode_action, width=15, height=4
 )
 image_button.grid(row=1, column=1, padx=5, pady=5)
 
@@ -295,10 +314,11 @@ camera_button = tk.Button(
 )
 camera_button.grid(row=2, column=0, padx=5, pady=5)
 
-presets_button = tk.Button(
+flappy_bird_button = tk.Button(
     mode_frame, text="FLAPPY BIRD", command=flappy_action, width=15, height=4
 )
-presets_button.grid(row=2, column=1, padx=5, pady=5)
+flappy_bird_button.grid(row=2, column=1, padx=5, pady=5)
+
 pong_button = tk.Button(
     mode_frame, text="PONG", command=pong_action, width=15, height=4
 )
@@ -334,15 +354,15 @@ bg_slider = tk.Scale(mode_settings_frame, from_=0, to=100, orient="horizontal",
 bg_slider.pack()
 
 # General settings frame
-general_settings_frame = tk.Frame(
-    left_frame, width=520, height=120, relief="solid", bd=1
-)
-general_settings_frame.pack(pady=10)
+# general_settings_frame = tk.Frame(
+#     left_frame, width=520, height=120, relief="solid", bd=1
+# )
+# general_settings_frame.pack(pady=10)
 
-general_settings_label = tk.Label(
-    general_settings_frame, text="GENERAL SETTINGS", font=("Arial", 14)
-)
-general_settings_label.pack(expand=True)
+# general_settings_label = tk.Label(
+#     general_settings_frame, text="GENERAL SETTINGS", font=("Arial", 14)
+# )
+# general_settings_label.pack(expand=True)
 
 # Right Frame for the Laser Preview Panel
 right_frame = tk.Frame(root, width=520, height=520, relief="solid", bd=1, bg="black")
