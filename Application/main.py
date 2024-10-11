@@ -321,7 +321,7 @@ def lower_slider_changed(value):
     if running_CV: running_CV.lower = int(value)
 def bg_slider_changed(value):
     print("BG value:", value)
-    if running_CV: running_CV.bg_threshold = int(value/100)
+    if running_CV: running_CV.bg_threshold = int(value)/100
 
 upper_slider = tk.Scale(mode_settings_frame, from_=0, to=255, orient="horizontal",
                   label="Upper", length=200, command=upper_slider_changed)
@@ -330,7 +330,7 @@ lower_slider = tk.Scale(mode_settings_frame, from_=0, to=255, orient="horizontal
                   label="Lower (must be less than Upper)", length=200, command=lower_slider_changed)
 lower_slider.pack()
 bg_slider = tk.Scale(mode_settings_frame, from_=0, to=100, orient="horizontal",
-                  label="BG threshold", length=200, command=lower_slider_changed)
+                  label="BG threshold", length=200, command=bg_slider_changed)
 bg_slider.pack()
 
 # General settings frame

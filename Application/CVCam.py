@@ -51,9 +51,10 @@ class CV:
                 upper = self.upper
             BG_threshold = self.bg_threshold  # cv2.getTrackbarPos('BG Threshold', 'canny')
 
-            frame = self.segmentor.removeBG(
-                frame, (0, 255, 0), cutThreshold=BG_threshold
-            )
+            if BG_threshold > 0:
+                frame = self.segmentor.removeBG(
+                    frame, (0, 255, 0), cutThreshold=BG_threshold
+                )
 
             edges = cv2.Canny(frame, lower, upper)
 
@@ -141,7 +142,7 @@ class CV:
                     # Mark the next point as visited
                     visited[next_index] = True
                     LED = PSoCBridge.C_GREEN
-                    if dist > 10:
+                    if dist > 999999:
                         LED = 0
                         for _ in range(2):
                             path.append(
