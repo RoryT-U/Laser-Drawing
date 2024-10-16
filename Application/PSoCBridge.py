@@ -121,6 +121,7 @@ class PSoCBridge:
         self.datastream = data
         if self.ignoreCOM:
             print(f"COM not connected: {len(data)} bytes")
+            print(data)
             return
 
         data = bytearray(data)

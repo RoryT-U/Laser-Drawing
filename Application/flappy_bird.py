@@ -17,13 +17,13 @@ black = (0, 0, 0)
 green = (0, 255, 0)
 yellow = (255, 255, 0)
 
-WALL_COLOUR = PSoCBridge.C_GREEN
-BIRD_COLOUR = PSoCBridge.C_GREEN
+WALL_COLOUR = PSoCBridge.C_ALL
+BIRD_COLOUR = PSoCBridge.C_RED
 PIPE_COLOUR = PSoCBridge.C_GREEN
 
 LASER_ON_DELAY = 15         # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5        # Point delay before turning the laser off
-DRAW_WALLS = False
+DRAW_WALLS = True
 
 class FlappyBird():
     
@@ -138,6 +138,8 @@ class FlappyBird():
 
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                
+                self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
                 # Top Wall
                 for _ in range(0, LASER_ON_DELAY):
@@ -148,6 +150,8 @@ class FlappyBird():
 
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                
+                self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
             print(len(to_send))
             self.PSoC.write(bytearray(list(to_send)))
@@ -161,7 +165,7 @@ class FlappyBird():
         points = Utils.Shapes.rectangle_points(x_left, y_top, pipe.width, pipe.height, 3, 3, 40)
 
         for _ in range(0, LASER_ON_DELAY):
-            self.add_coord(coords, points[0][0], points[0][1], colour)
+            self.add_coord(coords, points[0][0], points[0][1], 0)
 
         for point in points:
             self.add_coord(coords, point[0], point[1], colour)

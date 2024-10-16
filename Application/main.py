@@ -85,6 +85,7 @@ def draw_mode_action():
     if active_button == draw_button:
         return
     change_mode(draw_button)
+    PSoC.write([0,0,0])
 
 
 def image_mode_action():
@@ -127,7 +128,8 @@ def flappy_action():
     global running_flappy_bird
     if running_flappy_bird is not None:
         running_flappy_bird.stop()
-
+    set_flip_state(2)
+    set_swap_xy(True)
     change_mode(flappy_bird_button)
     running_flappy_bird = FlappyBird(PSoC)
     run_in_thread(running_flappy_bird.start_flappy_bird)
@@ -136,10 +138,10 @@ def pong_action():
     global running_pong
     if running_pong is not None:
         running_pong.stop()
-
+    set_flip_state(2)
+    set_swap_xy(True)
     change_mode(pong_button)
     running_pong = Pong(PSoC)
-    PSoC.flipX = True
     run_in_thread(running_pong.start_pong_game)
 
 
@@ -187,28 +189,31 @@ def write_error(error_message):
 
 
 # Function for FLIP OUTPUT
-flip_output_state = 0
+flip_output_state = 3
 def flip_output_cycle():
     global flip_output_state
-    if flip_output_state == 0:
+    set_flip_state((flip_output_state+1)%4)
+
+def set_flip_state(state:int):
+    global flip_output_state
+    flip_output_state = state
+    if state == 0:
         flip_output_button.config(text="FLIPPED X", bg="yellow", relief=tk.SUNKEN)
-        flip_output_state = 1
         PSoC.flipX, PSoC.flipY = True, False
-    elif flip_output_state == 1:
+    elif state == 1:
         flip_output_button.config(text="FLIPPED Y", bg="cyan", relief=tk.SUNKEN)
-        flip_output_state = 2
         PSoC.flipX, PSoC.flipY = False, True
-    elif flip_output_state == 2:
+    elif state == 2:
         flip_output_button.config(text="FLIPPED X & Y", bg="green", relief=tk.GROOVE)
-        flip_output_state = 3
         PSoC.flipX, PSoC.flipY = True, True
-    elif flip_output_state == 3:
+    elif state == 3:
         flip_output_button.config(text="FLIPPED NONE", bg="grey", relief=tk.RAISED)
-        flip_output_state = 0
         PSoC.flipX, PSoC.flipY = False, False
+
 
 # FLIP OUTPUT BUTTON
 flip_output_button = tk.Button(
+
     top_frame,
     text="FLIP IMAGE",
     command=flip_output_cycle,
@@ -219,9 +224,16 @@ flip_output_button = tk.Button(
 )
 flip_output_button.pack(side="left", padx= 10, pady=10)
 
+set_flip_state(flip_output_state)
+
 # SWAP XY FUNCTION
+
+
 def swap_xy_action():
-    if swap_output_button["text"] == "SWAP XY: OFF":
+    set_swap_xy(not PSoC.swapXY)
+
+def set_swap_xy(swap_xy:bool):
+    if (swap_xy):
         swap_output_button.config(text="SWAP XY: ON", bg="green", relief=tk.SUNKEN)
         PSoC.swapXY = True
     else:
@@ -252,16 +264,16 @@ shutdown_button = tk.Button(
 )
 shutdown_button.pack(side="right", padx=10, pady=10)
 
-# SETTINGS button
-settings_button = tk.Button(
-    top_frame,
-    text="Settings",
-    command=settings_action,
-    width=20,
-    height=2,
-    background="grey",
-)
-settings_button.pack(side="left", padx=10, pady=10)
+# # SETTINGS button
+# settings_button = tk.Button(
+#     top_frame,
+#     text="Settings",
+#     command=settings_action,
+#     width=20,
+#     height=2,
+#     background="grey",
+# )
+# settings_button.pack(side="left", padx=10, pady=10)
 
 # Left Frame for mode selection and settings
 left_frame = tk.Frame(root, width=520, height=590, relief="solid", bd=1)

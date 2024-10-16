@@ -3,28 +3,21 @@ import pygame
 import random
 import numpy as np
 from pyparsing import col
-import serial
-import time
-from threading import Thread
 import random
 
 from PSoCBridge import PSoCBridge
-import Utils
-
-
 
 LASER_ON_DELAY = 7        # Point delay before turning the laser back on
 LASER_OFF_DELAY = 5         # Point delay before turning the laser off
 DRAW_WALLS = True
 
-PADDLE_1_COLOUR = PSoCBridge.C_GREEN
-PADDLE_2_COLOUR = PSoCBridge.C_GREEN
-BALL_WALL_COLOUR = PSoCBridge.C_GREEN
-
+PADDLE_1_COLOUR = PSoCBridge.C_RED
+PADDLE_2_COLOUR = PSoCBridge.C_RED
+BALL_WALL_COLOUR = PSoCBridge.C_RED
 
 LASER_ON_DELAY = 10        # Point delay before turning the laser back on
 LASER_OFF_DELAY = 6         # Point delay before turning the laser off
-DRAW_WALLS = False
+DRAW_WALLS = True
 
 class Pong:
     def __init__(self, PSoC):
@@ -43,7 +36,7 @@ class Pong:
 
         # Ball settings
         INITIAL_BALL_VELOCITY_Y = 0.1
-        default_ball_speed = 2.2
+        default_ball_speed = 2.5
         ball_radius = 5
         ball_velocity_x = default_ball_speed * random.choice((1, -1))
         ball_velocity_y = INITIAL_BALL_VELOCITY_Y
@@ -51,7 +44,7 @@ class Pong:
 
         # Paddle settings
         paddle_width, paddle_height = 10, 50
-        paddle_velocity = 7
+        paddle_velocity = 9
         player_one_x, player_one_y = 5, height // 2 - paddle_height // 2
         player_two_x, player_two_y = width - 5 - paddle_width, height // 2 - paddle_height // 2
 
@@ -61,25 +54,25 @@ class Pong:
         # Main game loop
         while self.running:
             # Movement keys
-            if keyboard.is_pressed('s') and player_one_y > 0:
+            if keyboard.is_pressed('down') and player_one_y > 0:
                 player_one_y -= paddle_velocity
 
                 if (player_one_y < 0):
                     player_one_y = 0
 
-            if keyboard.is_pressed('w') and player_one_y < height - paddle_height:
+            if keyboard.is_pressed('up') and player_one_y < height - paddle_height:
                 player_one_y += paddle_velocity
 
                 if (player_one_y > height - paddle_height):
                     player_one_y = height - paddle_height
 
-            if keyboard.is_pressed('down') and player_two_y > 0:
+            if keyboard.is_pressed('s') and player_two_y > 0:
                 player_two_y -= paddle_velocity
 
                 if (player_two_y < 0):
                     player_two_y = 0
 
-            if keyboard.is_pressed('up') and player_two_y < height - paddle_height:
+            if keyboard.is_pressed('w') and player_two_y < height - paddle_height:
                 player_two_y += paddle_velocity
 
                 if (player_two_y > height - paddle_height):
@@ -157,16 +150,20 @@ class Pong:
 
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                
+                self.add_coord(to_send, to_send[-3], to_send[-2], to_send[0])
 
                 # Top Wall
                 for _ in range(0, LASER_ON_DELAY+1):
-                    self.add_coord(to_send, to_send[-3], to_send[-2], 0)
+                    self.add_coord(to_send, 0, 0, 0)
 
                 for i in range(0, 256, 5):
                     self.add_coord(to_send, i, 0, BALL_WALL_COLOUR)
 
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
+                
+                self.add_coord(to_send, to_send[-3], to_send[-2], to_send[0])
 
             #print(len(to_send))
             self.PSoC.write((to_send))
