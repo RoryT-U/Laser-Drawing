@@ -151,7 +151,7 @@ class Pong:
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
                 
-                self.add_coord(to_send, to_send[-3], to_send[-2], to_send[0])
+                self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
                 # Top Wall
                 for _ in range(0, LASER_ON_DELAY+1):
@@ -163,7 +163,7 @@ class Pong:
                 for _ in range(0, LASER_OFF_DELAY):
                     self.add_coord(to_send, to_send[-3], to_send[-2], to_send[-1])
                 
-                self.add_coord(to_send, to_send[-3], to_send[-2], to_send[0])
+                self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
             #print(len(to_send))
             self.PSoC.write((to_send))

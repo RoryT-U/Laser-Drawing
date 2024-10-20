@@ -144,11 +144,10 @@ def pong_action():
     running_pong = Pong(PSoC)
     run_in_thread(running_pong.start_pong_game)
 
-
 # Create the main window
 root = tk.Tk()
 root.title("Laser System Interface")
-root.geometry("1024x640")
+root.geometry("1024x700")
 root.protocol("WM_DELETE_WINDOW", shutdown_action)
 root.resizable(True, True)
 
@@ -496,12 +495,19 @@ def draw_data(data_stream):
             else:
                 colorStr = "#222222"
 
+            draw_line(5 + prev_x * 2, 6 + prev_y * 2, 5 + xpos * 2, 6 + ypos * 2, colorStr)
+            draw_line(6 + prev_x * 2, 6 + prev_y * 2, 6 + xpos * 2, 6 + ypos * 2, colorStr)
             draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, colorStr)
+            draw_line(6 + prev_x * 2, 5 + prev_y * 2, 6 + xpos * 2, 5 + ypos * 2, colorStr)
         prev_x, prev_y = xpos, ypos
 
     if prev_x is not None and prev_y is not None:
         xpos, ypos, color = data_stream[0], data_stream[1], data_stream[2]
-        draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, "#222222")
+        colorStr = "#222222"
+        draw_line(5 + prev_x * 2, 6 + prev_y * 2, 5 + xpos * 2, 6 + ypos * 2, colorStr)
+        draw_line(6 + prev_x * 2, 6 + prev_y * 2, 6 + xpos * 2, 6 + ypos * 2, colorStr)
+        draw_line(5 + prev_x * 2, 5 + prev_y * 2, 5 + xpos * 2, 5 + ypos * 2, colorStr)
+        draw_line(6 + prev_x * 2, 5 + prev_y * 2, 6 + xpos * 2, 5 + ypos * 2, colorStr)
 
 
 # Example data stream (continuous array)

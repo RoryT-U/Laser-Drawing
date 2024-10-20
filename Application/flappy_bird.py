@@ -130,7 +130,7 @@ class FlappyBird():
 
             if DRAW_WALLS:
                 # Bottom Wall
-                for _ in range(0, LASER_ON_DELAY):
+                for _ in range(0, LASER_ON_DELAY+1):
                     self.add_coord(to_send, 255, 255, 0)
 
                 for i in range(255, -1, -5):
@@ -142,7 +142,7 @@ class FlappyBird():
                 self.add_coord(to_send, to_send[-3], to_send[-2], 0)
 
                 # Top Wall
-                for _ in range(0, LASER_ON_DELAY):
+                for _ in range(0, LASER_ON_DELAY+1):
                     self.add_coord(to_send, 0, 0, 0)
 
                 for i in range(0, 256, 5):
